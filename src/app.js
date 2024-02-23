@@ -24,9 +24,9 @@ app.use(
    })
 );
 
+app.use(cookieParser())
 // routes imports
 
-// import userRouter from "../src/routes/user.routes.js";
 import  userRouter from "../src/routes/user.routes.js";
 
 
