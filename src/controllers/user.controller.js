@@ -90,7 +90,7 @@ const loginUser = asyncHandler(async (req, res) => {
    const user = await User.findOne({
       $or: [{ username }, { email }],
    });
-   
+
    if (!user) {
       throw new ApiError(404, "User does not exists");
    }
@@ -203,4 +203,94 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
       );
 });
 
-export { registerUser, loginUser, logOutUser, refreshAccessToken };
+const changeCurrentUser = asyncHandler(async (req, res) => {
+   const { oldPassword, newPassword, confirmPassword } = req.body;
+
+   // if user can change password , that means user is already logged in, and that logged user can be accessed by auth_middleware - > req.user
+   const user = await User.findById(req.user?._id);
+
+   const passwordCorrect = await user.isPasswordCorrect(oldPassword);
+   if (!passwordCorrect) {
+      throw new ApiError(400, "Invalid old password");
+   }
+
+   if (!(newPassword === confirmPassword)) {
+      throw new ApiError(
+         400,
+         "New password and Confirmation password do not match"
+      );
+   }
+   user.password = newPassword;
+
+   await user.save({ validateBeforeSave: false });
+
+   return res
+      .status(200)
+      .json(new ApiResponse(200, {}, "Password changed successfully"));
+});
+
+const getCurrentUser = asyncHandler(async (req, res) => {
+   return res.status(200).json(200, req.user, "Current user fetched");
+});
+
+const updateAccountDetails = asyncHandler(async (req, res) => {
+   const { username, fullName, email } = req.body;
+
+   if (!fullName || !email || !username) {
+      throw new ApiError(400, "Fill all required information ");
+   }
+   const user = await User.findByIdAndUpdate(
+      req.body?._id,
+      {
+         $set: {
+            fullName,
+            email,
+            username,
+         },
+      },
+      { new: true }
+   ).select("-password")
+
+   return res
+   .status(200)
+   .json(ApiResponse(200,"Account details updated successfully "))
+});
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+export {
+   registerUser,
+   loginUser,
+   logOutUser,
+   refreshAccessToken,
+   changeCurrentUser,
+   getCurrentUser,
+   updateAccountDetails
+};
