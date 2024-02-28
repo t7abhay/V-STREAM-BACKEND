@@ -30,6 +30,7 @@ const registerUser = asyncHandler(async (req, res) => {
    ) {
       throw new ApiError(400, "All fields are required");
    }
+   // to check if the user with same username and email already exist in the database
    const existedUser = await User.findOne({
       $or: [{ username }, { email }],
    });
@@ -59,9 +60,10 @@ const registerUser = asyncHandler(async (req, res) => {
       throw new ApiError(400, "Avatar filed is required");
    }
 
+   // We create a user on database
    const user = await User.create({
       fullName,
-      avatar: avatar.url,
+      avatar: avatar.url, // from cloudinary
       coverImage: coverImage?.url || "",
       email,
       password,
@@ -88,6 +90,7 @@ const loginUser = asyncHandler(async (req, res) => {
    const user = await User.findOne({
       $or: [{ username }, { email }],
    });
+   
    if (!user) {
       throw new ApiError(404, "User does not exists");
    }
@@ -165,7 +168,7 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
          process.env.REFRESH_TOKEN_SECRET
       );
    } catch (error) {
-      throw new ApiError(401,error?.message||"Invalid token");
+      throw new ApiError(401, error?.message || "Invalid token");
    }
 
    const user = await User.findById(decodedToken?._id);
@@ -200,4 +203,4 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
       );
 });
 
-export { registerUser, loginUser, logOutUser,refreshAccessToken };
+export { registerUser, loginUser, logOutUser, refreshAccessToken };
