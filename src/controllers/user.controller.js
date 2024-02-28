@@ -3,6 +3,8 @@ import { ApiError } from "../utilities/ApiError.js";
 import { User } from "../models/user.model.js";
 import { uploadOnCloudinary } from "../utilities/cloudinary.js";
 import { ApiResponse } from "../utilities/ApiResponse.js";
+import {updateUserAvatar} from "./avatarUpdate.controller.js";
+import {updateUserCoverImage} from "./coverImageUpdate.controller.js";
 import jwt from "jsonwebtoken";
 import mongoose from "mongoose";
 
@@ -249,41 +251,12 @@ const updateAccountDetails = asyncHandler(async (req, res) => {
          },
       },
       { new: true }
-   ).select("-password")
+   ).select("-password");
 
    return res
-   .status(200)
-   .json(ApiResponse(200,"Account details updated successfully "))
+      .status(200)
+      .json(ApiResponse(200, "Account details updated successfully "));
 });
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 export {
    registerUser,
@@ -292,5 +265,7 @@ export {
    refreshAccessToken,
    changeCurrentUser,
    getCurrentUser,
-   updateAccountDetails
+   updateAccountDetails,
+   updateUserCoverImage,
+   updateUserAvatar
 };
