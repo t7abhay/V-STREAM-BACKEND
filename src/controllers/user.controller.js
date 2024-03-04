@@ -263,14 +263,6 @@ const getUserChannelProfile = asyncHandler(async (req, res) => {
    // the channel; url can be found from praramter in req
 
    const { username } = req.params;
-   if (!username?.trim()) {
-      throw new ApiError(400, "username is missing");
-   }
-   return res
-      .status(200)
-      .json(
-         new ApiError(200, channel[0], "User Channel fetched successfully ")
-      );
 
    const channel = await User.aggregate([
       {
@@ -340,6 +332,15 @@ const getUserChannelProfile = asyncHandler(async (req, res) => {
    }
 
    /* we get return value of aggregate as arrays */
+
+   if (!username?.trim()) {
+      throw new ApiError(400, "username is missing");
+   }
+   return res
+      .status(200)
+      .json(
+         new ApiError(200, channel[0], "User Channel fetched successfully ")
+      );
 });
 
 export {
