@@ -2,8 +2,7 @@ import mongoose, { Schema } from "mongoose";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
 
-
-//basic schema 
+//basic schema
 const userSchema = new Schema(
    {
       username: {
@@ -38,7 +37,7 @@ const userSchema = new Schema(
       coverimage: {
          type: String,
       },
-
+      
       watchhistory: [
          {
             type: mongoose.Schema.Types.ObjectId,
@@ -62,22 +61,20 @@ This is a middle ware and the reason why we
 dont use arrow function for  the call back is because we need to reference this middle ware to userSchema.add
 the middle ware request next to pass it as flag */
 
-// Middleware to hash the password 
+// Middleware to hash the password
 userSchema.pre("save", async function (next) {
    if (!this.isModified("password")) return next();
    this.password = await bcrypt.hash(this.password, 10);
    next();
 });
 
-// Middleware to validate the password by comparing it with hash value 
+// Middleware to validate the password by comparing it with hash value
 userSchema.methods.isPasswordCorrect = async function (password) {
    return await bcrypt.compare(password, this.password);
 };
 export const User = mongoose.model("User", userSchema);
 
-
-
-// a custom function to generate Access token using JWT 
+// a custom function to generate Access token using JWT
 userSchema.methods.generateAccessToken = function () {
    return jwt.sign(
       {

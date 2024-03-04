@@ -3,8 +3,8 @@ import { ApiError } from "../utilities/ApiError.js";
 import { User } from "../models/user.model.js";
 import { uploadOnCloudinary } from "../utilities/cloudinary.js";
 import { ApiResponse } from "../utilities/ApiResponse.js";
-import {updateUserAvatar} from "./avatarUpdate.controller.js";
-import {updateUserCoverImage} from "./coverImageUpdate.controller.js";
+import { updateUserAvatar } from "./avatarUpdate.controller.js";
+import { updateUserCoverImage } from "./coverImageUpdate.controller.js";
 import jwt from "jsonwebtoken";
 import mongoose from "mongoose";
 
@@ -242,7 +242,7 @@ const updateAccountDetails = asyncHandler(async (req, res) => {
       throw new ApiError(400, "Fill all required information ");
    }
    const user = await User.findByIdAndUpdate(
-      req.body?._id,
+      req.user?._id,
       {
          $set: {
             fullName,
@@ -255,7 +255,91 @@ const updateAccountDetails = asyncHandler(async (req, res) => {
 
    return res
       .status(200)
-      .json(ApiResponse(200, "Account details updated successfully "));
+      .json(new ApiResponse(200, "Account details updated successfully "));
+});
+
+const getUserChannelProfile = asyncHandler(async (req, res) => {
+   // we can get the user profile from the channel url
+   // the channel; url can be found from praramter in req
+
+   const { username } = req.params;
+   if (!username?.trim()) {
+      throw new ApiError(400, "username is missing");
+   }
+   return res
+      .status(200)
+      .json(
+         new ApiError(200, channel[0], "User Channel fetched successfully ")
+      );
+
+   const channel = await User.aggregate([
+      {
+         $match: {
+            username: username?.toLowerCase(),
+         },
+      },
+      {
+         // lookup for all documents of a user
+         // to search for users using _id
+         // this will find how many documents contain the channel_name to find the total number of subscribers
+         $lookup: {
+            from: "subscription",
+            localField: "_id",
+            foreignField: "channels",
+            as: "subscribers",
+         },
+      },
+
+      // if we searched in documents->channels : then we can find number of subscribers
+      // if we search in documents -> users : then we can find how many channels a user has subscribed.
+
+      {
+         // lookup for all documents of a channels
+         // to search for users using _id
+         // this will find how many documents contain the channel_name to find the total number of channels a user has subscribed
+         $lookup: {
+            from: "subscription",
+            localField: "_id",
+            foreignField: "subscriber",
+            as: "subscriberedTo",
+         },
+      },
+      {
+         $addFields: {
+            subscribersCount: {
+               $size: "$subscribers",
+            },
+            channelsSubscribedToCount: {
+               $size: "$subscriberedTo",
+            },
+            isSubscribed: {
+               $cond: {
+                  if: { $in: [req.user?._id, "$subscribers.subscriber"] },
+                  then: true,
+                  else: flase,
+               },
+            },
+         },
+      },
+      {
+         $project: {
+            fullName: 1,
+            username: 1,
+            subscribersCount: 1,
+            channelsSubscribedToCount: 1,
+            isSubscribed: 1,
+            avatar: 1,
+            coverImage: 1,
+            email: 1,
+         },
+      },
+   ]);
+
+   if (!channel?.length) {
+      throw new ApiError(404, "Channel does not exist");
+   }
+
+   /* we get return value of aggregate as arrays */
 });
 
 export {
@@ -267,5 +351,6 @@ export {
    getCurrentUser,
    updateAccountDetails,
    updateUserCoverImage,
-   updateUserAvatar
+   updateUserAvatar,
+   getUserChannelProfile,
 };
