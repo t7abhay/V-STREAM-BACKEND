@@ -205,14 +205,14 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
       );
 });
 
-const changeCurrentUser = asyncHandler(async (req, res) => {
+const changeCurrentPassword = asyncHandler(async (req, res) => {
    const { oldPassword, newPassword, confirmPassword } = req.body;
 
    // if user can change password , that means user is already logged in, and that logged user can be accessed by auth_middleware - > req.user
    const user = await User.findById(req.user?._id);
 
-   const passwordCorrect = await user.isPasswordCorrect(oldPassword);
-   if (!passwordCorrect) {
+   const isPasswordCorrect = await user.isPasswordCorrect(oldPassword);
+   if (!isPasswordCorrect) {
       throw new ApiError(400, "Invalid old password");
    }
 
@@ -407,9 +407,10 @@ const getWatchHistory = asyncHandler(async (req, res) => {
 export {
    registerUser,
    loginUser,
+   loginUser,
    logOutUser,
    refreshAccessToken,
-   changeCurrentUser,
+   changeCurrentPassword,
    getCurrentUser,
    updateAccountDetails,
    updateUserCoverImage,
