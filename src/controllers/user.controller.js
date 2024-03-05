@@ -260,20 +260,25 @@ const updateAccountDetails = asyncHandler(async (req, res) => {
 
 const getUserChannelProfile = asyncHandler(async (req, res) => {
    // we can get the user profile from the channel url
-   // the channel; url can be found from praramter in req
+   // the channel url can be found from praramter in req
 
    const { username } = req.params;
 
+   // defining aggregation pipelines
    const channel = await User.aggregate([
+      //stage 1 : match username in all documents ,optionally chained them to lowercase
       {
          $match: {
             username: username?.toLowerCase(),
          },
       },
+
+      //stage 2 : Doing lookup for subscription from subscription model/schema
       {
-         // lookup for all documents of a user
+         // lookup for all user documents
          // to search for users using _id
-         // this will find how many documents contain the channel_name to find the total number of subscribers
+         // this will find how many (user)documents contain the channel_name to find the total number of subscribers
+         // the subscription filed has user reference in schema
          $lookup: {
             from: "subscription",
             localField: "_id",
@@ -285,10 +290,9 @@ const getUserChannelProfile = asyncHandler(async (req, res) => {
       // if we searched in documents->channels : then we can find number of subscribers
       // if we search in documents -> users : then we can find how many channels a user has subscribed.
 
+      // Stage 3: this is quite complex but please refer to subscription model
       {
-         // lookup for all documents of a channels
-         // to search for users using _id
-         // this will find how many documents contain the channel_name to find the total number of channels a user has subscribed
+         // Lookup for
          $lookup: {
             from: "subscription",
             localField: "_id",
@@ -296,14 +300,18 @@ const getUserChannelProfile = asyncHandler(async (req, res) => {
             as: "subscriberedTo",
          },
       },
+      // Stage 4: Counting the subs and subbed
+      // also checking if the user is subbed or not
       {
-         $addFields: {
+         $addFiels: {
             subscribersCount: {
                $size: "$subscribers",
             },
             channelsSubscribedToCount: {
                $size: "$subscriberedTo",
             },
+
+            // if found in Stage1 .i.e from total number of subs
             isSubscribed: {
                $cond: {
                   if: { $in: [req.user?._id, "$subscribers.subscriber"] },
@@ -313,6 +321,8 @@ const getUserChannelProfile = asyncHandler(async (req, res) => {
             },
          },
       },
+
+      // Stage 5: forwards or projects 📺 values which are explicitly mentioned.
       {
          $project: {
             fullName: 1,
