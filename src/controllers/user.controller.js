@@ -85,12 +85,15 @@ const registerUser = asyncHandler(async (req, res) => {
 
 const loginUser = asyncHandler(async (req, res) => {
    const { email, username, password } = req.body;
+
+   // console.log(username);
+
    if (!username && !email) {
       throw new ApiError(400, "username or email is required");
    }
 
    const user = await User.findOne({
-      $or: [{ username }, { email }],
+      $and: [{ username }, { email }],
    });
 
    if (!user) {
@@ -100,7 +103,7 @@ const loginUser = asyncHandler(async (req, res) => {
    const isPasswordValid = await user.isPasswordCorrect(password);
 
    if (!isPasswordValid) {
-      throw new ApiError(404, "Invalid user credentials");
+      throw new ApiError(401, "Invalid user credentials");
    }
 
    const { accessToken, refreshToken } = await generateAccessAndRefreshTokens(
@@ -150,7 +153,7 @@ const logOutUser = asyncHandler(async (req, res) => {
    return res
       .status(200)
       .clearCookie("accessToken", options)
-      .cookieCookie("refreshToken", options)
+      .clearCookie("refreshToken", options)
       .json(new ApiResponse(200, {}, "User loggedOut"));
 });
 
@@ -169,40 +172,39 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
          incomingRefreshToken,
          process.env.REFRESH_TOKEN_SECRET
       );
+
+      const user = await User.findById(decodedToken?._id);
+
+      if (!user) {
+         throw new ApiError(401, "Invalid refresh token");
+      }
+
+      if (incomingRefreshToken !== user?.refreshToken) {
+         throw new ApiError(401, "Refresh token is expired or use");
+      }
+
+      const options = {
+         httpOnly: true,
+         secure: true,
+      };
+
+      const { accessToken, refreshToken } =
+         await generateAccessAndRefreshTokens(user._id);
+
+      return res
+         .status(200)
+         .cookie("accessToken", accessToken, options)
+         .cookie("refreshToken", newRefreshToken, options)
+         .json(
+            new ApiResponse(
+               200,
+               { accessToken, refreshToken: newRefreshToken },
+               "Access token refreshed "
+            )
+         );
    } catch (error) {
       throw new ApiError(401, error?.message || "Invalid token");
    }
-
-   const user = await User.findById(decodedToken?._id);
-
-   if (!user) {
-      throw new ApiError(401, "Invalid refresh token");
-   }
-
-   if (incomingRefreshToken !== user?.refreshToken) {
-      throw new ApiError(401, "Refresh token is expired or use");
-   }
-
-   const options = {
-      httpOnly: true,
-      secure: true,
-   };
-
-   const { accessToken, refreshToken } = await generateAccessAndRefreshTokens(
-      user._id
-   );
-
-   return res
-      .status(200)
-      .cookie("accessToken", accessToken, options)
-      .cookie("refreshToken", newRefreshToken, options)
-      .json(
-         new ApiResponse(
-            200,
-            { accessToken, newRefreshToken },
-            "Access token refreshed "
-         )
-      );
 });
 
 const changeCurrentPassword = asyncHandler(async (req, res) => {
@@ -303,7 +305,7 @@ const getUserChannelProfile = asyncHandler(async (req, res) => {
       // Stage 4: Counting the subs and subbed
       // also checking if the user is subbed or not
       {
-         $addFiels: {
+         $addFields: {
             subscribersCount: {
                $size: "$subscribers",
             },
@@ -316,7 +318,7 @@ const getUserChannelProfile = asyncHandler(async (req, res) => {
                $cond: {
                   if: { $in: [req.user?._id, "$subscribers.subscriber"] },
                   then: true,
-                  else: flase,
+                  else: false,
                },
             },
          },
@@ -355,24 +357,33 @@ const getUserChannelProfile = asyncHandler(async (req, res) => {
 
 const getWatchHistory = asyncHandler(async (req, res) => {
    const user = await User.aggregate([
+      // Stage:1 Matching the user documents
       {
          $match: {
             _id: new mongoose.Types.ObjectId(req.user?._id),
          },
       },
+
+      // Stage 2:  Lookup for video ids as watch history
       {
          $lookup: {
-            from: "videos",
-            localField: "watchHistory",
-            foreignField: "_id",
+            from: "videos", // from video schema
+            localField: "watchHistory", // user schema
+            foreignField: "_id", // video id's
             as: "watchhistory",
             pipeline: [
+               // Stage 3 : from video modal , match ids with owners from user
                {
                   $lookup: {
-                     from: "users",
-                     localField: "owner",
-                     foreignField: "_id",
+                     from: "users", // user modal
+                     localField: "owner", // the user owns the video
+                     foreignField: "_id", // getting the user id
                      as: "owner",
+
+                     // now we have the user's watch history and the owner of each video that is in watch history
+
+                     // can be done directly but this is the prefered way
+                     // then we project avatar and etc info to display on  watch history page.
                      pipeline: [
                         {
                            $project: {
@@ -381,6 +392,8 @@ const getWatchHistory = asyncHandler(async (req, res) => {
                               avatar: 1,
                            },
                         },
+
+                        // for sake of frontend
                         {
                            $addFields: {
                               owner: {
@@ -396,17 +409,15 @@ const getWatchHistory = asyncHandler(async (req, res) => {
       },
    ]);
 
+
+   const apiResponse  = new ApiResponse(200,user[0].watchHistory, "Watched history fetched successfully")
    return res
       .status(200)
-      .json(
-         new ApiResponse(200, user[0].watchHistory),
-         "Wacted history fetched successfully"
-      );
+      .json(apiResponse)
 });
 
 export {
    registerUser,
-   loginUser,
    loginUser,
    logOutUser,
    refreshAccessToken,
