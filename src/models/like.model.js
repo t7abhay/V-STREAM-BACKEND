@@ -2,10 +2,10 @@ import req from "express/lib/request";
 import { type } from "express/lib/response";
 import mongoose, { Schema } from "mongoose";
 
-const likeScheme = new Schema(
+const likeSchema = new Schema(
    {
 
-      comments: {
+      comment: {
          type: Schema.Types.ObjectId,
          ref: "Comment",
       },
@@ -29,4 +29,4 @@ const likeScheme = new Schema(
    { timestamps: true }
 );
 
-export const likes = mongoose.model("Like", likeScheme);
+export const likes = mongoose.model("Like", likeSchema);
