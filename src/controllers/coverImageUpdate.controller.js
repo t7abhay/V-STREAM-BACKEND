@@ -6,7 +6,7 @@ import { ApiResponse } from "../utilities/ApiResponse.js";
  
 
 const updateUserCoverImage = asyncHandler(async (req, res) => {
-   const coverImageLocalPath = req.file?.path;
+   const coverImageLocalPath = req.files?.path;
 
    if (!updateUserCoverImage) {
       throw new ApiError(400, "CoverImage file is missing");

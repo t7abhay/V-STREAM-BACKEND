@@ -5,7 +5,7 @@ import { uploadOnCloudinary } from "../utilities/cloudinary.js";
  
 
 const updateUserAvatar = asyncHandler(async (req, res) => {
-   const avatarLocalPath = req.file?.path;
+   const avatarLocalPath = req.files.path;
 
    if (!avatarLocalPath) {
       throw new ApiError(400, "Avatar file is missing");
