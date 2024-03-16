@@ -1,12 +1,11 @@
-import dotenv from "dotenv";
+// import dotenv from "dotenv";
 import connectDB from "./db/index.js";
 import app from "./app.js";
 
 // Setup for environment variables
 
-dotenv.config({
-  path: "./.env",
-});
+process.loadEnvFile()
+ 
 
 // We handle the promise here
 //app.on is a middleware to hand any error
