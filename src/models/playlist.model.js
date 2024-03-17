@@ -1,4 +1,4 @@
-import mongoose, { Schema } from "mongoose";
+ import mongoose, { Schema } from "mongoose";
 
 const playlistSchema = new Schema(
    {
@@ -22,6 +22,11 @@ const playlistSchema = new Schema(
          type: Schema.Types.ObjectId,
          ref: "User",
       },
+      
+      isPublished: {
+         type: Boolean,
+         default: true
+     },
    },
    { timestamps: true }
 );

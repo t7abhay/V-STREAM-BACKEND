@@ -115,7 +115,7 @@ const publishAVideo = asyncHandler(async (req, res) => {
     const { tittle, description } = req.body;
 
     if ([tittle, description].some((field) => field?.trim() === "")) {
-        throw new ApiError(400, "All fields are required");
+    throw new ApiError(400, "All fields are required");
     }
 
     const videoLocalPath = req.files?.videoFile[0].path;
