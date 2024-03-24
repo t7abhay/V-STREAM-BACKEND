@@ -13,11 +13,11 @@ const generateAccessAndRefreshTokens = async (userId) => {
       const user = await User.findById(userId);
       const accessToken = user.generateAccessToken();
       const refreshToken = user.generateRefreshToken();
-      user.refreshToken = refreshToken;
+      user.refreshToken = refreshToken; 
       await user.save({ validateBeforeSave: false });
       return { accessToken, refreshToken };
    } catch (error) {
-      throw new ApiError(
+      throw new ApiErrwor(
          500,
          "Something went wrong while generating refresh and access token"
       );
@@ -86,8 +86,7 @@ const registerUser = asyncHandler(async (req, res) => {
 const loginUser = asyncHandler(async (req, res) => {
    const { email, username, password } = req.body;
 
-   // console.log(username);
-
+   
    if (!username && !email) {
       throw new ApiError(400, "username or email is required");
    }
@@ -354,6 +353,8 @@ const getUserChannelProfile = asyncHandler(async (req, res) => {
          new ApiError(200, channel[0], "User Channel fetched successfully ")
       );
 });
+
+
 
 const getWatchHistory = asyncHandler(async (req, res) => {
    const user = await User.aggregate([
