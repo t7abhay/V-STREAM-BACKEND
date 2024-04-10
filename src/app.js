@@ -3,8 +3,6 @@ import cors from "cors";
 import cookieParser from "cookie-parser";
 const app = express();
 
-// To allow to use resources from outside the domain
-// here we use cloudinary , so we need cors
 app.use(
     cors({
         origin: process.env.CORS_ORIGIN,
@@ -13,36 +11,41 @@ app.use(
     })
 );
 
-// Defined the json request size
 app.use(
     express.json({
         limit: "40kb",
     })
 );
 
-// the size of the url
 app.use(
     express.urlencoded({
         extended: true,
         limit: "20kb",
     })
 );
-
-// ! To get parse cookies and use them for example : login / logout or to store session information
 app.use(cookieParser());
 
-// routes imports
+// ROUTES IMPORTS
 
-import userRouter from "../src/routes/user.routes.js";
-import likeRouter from "../src/routes/like.routes.js";
-import commentRouter from "../src/routes/comment.routes.js";
-import tweetRouter from "../src/routes/tweet.routes.js";
+import userRouter from "./routes/user.routes.js";
+import healthcheckRouter from "./routes/healthcheck.routes.js";
+import tweetRouter from "./routes/tweet.routes.js";
+import subscriptionRouter from "./routes/subscription.routes.js";
+import videoRouter from "./routes/video.routes.js";
+import commentRouter from "./routes/comment.routes.js";
+import likeRouter from "./routes/like.routes.js";
+import playlistRouter from "./routes/playlist.routes.js";
+import dashboardRouter from "./routes/dashboard.routes.js";
 
-// routes declaration
-
+//ROUTES DECLARATION
+app.use("/api/v1/healthcheck", healthcheckRouter);
 app.use("/api/v1/users", userRouter);
-app.use("/api/v1/likes", likeRouter);
-app.use("/api/v1/comments", commentRouter);
 app.use("/api/v1/tweets", tweetRouter);
+app.use("/api/v1/subscriptions", subscriptionRouter);
+app.use("/api/v1/videos", videoRouter);
+app.use("/api/v1/comments", commentRouter);
+app.use("/api/v1/likes", likeRouter);
+app.use("/api/v1/playlist", playlistRouter);
+app.use("/api/v1/dashboard", dashboardRouter);
 
-export  {app}
+export { app };

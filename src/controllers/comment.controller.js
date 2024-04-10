@@ -1,7 +1,7 @@
 import { isValidObjectId } from "mongoose";
-import { Comment } from "../models/comment.model.js";
-import { Video } from "../models/video.model.js";
-import { Like } from "../models/like.model.js";
+import { Comment } from "../middlewares/models/comment.model.js";
+import { Video } from "../middlewares/models/video.model.js";
+import { Like } from "../middlewares/models/like.model.js";
 import { ApiError } from "../utilities/ApiError.js";
 import { ApiResponse } from "../utilities/ApiResponse.js";
 import { asyncHandler } from "../utilities/asyncHandler.js";
