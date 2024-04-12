@@ -3,7 +3,7 @@ import { Tweet } from "../models/tweet.model.js";
 import { User } from "../models/user.model.js";
 import { ApiError } from "../utilities/ApiError.js";
 import { ApiResponse } from "../utilities/ApiResponse.js";
-import { asyncHandler } from "../utilities/asyncHandler.js  ";
+import { asyncHandler } from "../utilities/asyncHandler.js";
 
 const createTweet = asyncHandler(async (req, res) => {
     const { content } = req.body;
@@ -84,7 +84,7 @@ const deleteTweet = asyncHandler(async (req, res) => {
         throw new ApiError(400, "only owner can delete their tweet");
     }
 
-    const  deletedTweet = await Tweet.findByIdAndDelete(tweetId);
+    const deletedTweet = await Tweet.findByIdAndDelete(tweetId);
     if (!deletedTweet) {
         throw new ApiError(500, "Error while deleting comment ! Please retry");
     }
@@ -150,7 +150,7 @@ const getUserTweets = asyncHandler(async (req, res) => {
                         if: { $in: [req.user?._id, "$likeDetails.likedBy"] },
                         then: true,
                         else: false,
-                     },
+                    },
                 },
             },
         },

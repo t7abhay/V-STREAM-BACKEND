@@ -157,3 +157,4 @@ dist
 # Ignore all local history of files
 .history
 .ionide
+pnpm-lock.yaml

@@ -1,5 +1,3 @@
-import req from "express/lib/request";
-import { type } from "express/lib/response";
 import mongoose, { Schema } from "mongoose";
 
 const likeSchema = new Schema(
@@ -29,4 +27,4 @@ const likeSchema = new Schema(
    { timestamps: true }
 );
 
-export const likes = mongoose.model("Like", likeSchema);
+export const Like = mongoose.model("Like", likeSchema);

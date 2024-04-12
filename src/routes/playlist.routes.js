@@ -8,7 +8,7 @@ import {
     getPlaylistById,
     addVideoToPlaylist,
     removeVideoFromPlaylist,
-} from "../controllers/tweet.controller.js ";
+} from "../controllers/playlist.controller.js";
 import { upload } from "../middlewares/multer.middleware.js";
 const router = Router();
 
