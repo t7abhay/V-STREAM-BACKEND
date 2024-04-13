@@ -25,8 +25,6 @@ app.use(
 );
 app.use(cookieParser());
 
-// ROUTES IMPORTS
-
 import userRouter from "./routes/user.routes.js";
 import healthcheckRouter from "./routes/healthcheck.routes.js";
 import tweetRouter from "./routes/tweet.routes.js";
