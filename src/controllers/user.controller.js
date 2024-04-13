@@ -172,14 +172,14 @@ const logOutUser = asyncHandler(async (req, res) => {
 
 const refreshAccessToken = asyncHandler(async (req, res) => {
     const incomingRefreshToken =
-        // ?from cookies and for mobile browser - body
         req.cookies.refreshToken || req.body.refreshToken;
+    // for mobile browser - body
 
     if (!incomingRefreshToken) {
-        throw new ApiError(401, "unauthorized request");
+        throw new ApiError(401, "Unauthorized request");
     }
 
-    // Verifying incoming incomingtoken from the client
+    // Verifying incoming token from the client
     try {
         const decodedToken = await jwt.verify(
             incomingRefreshToken,
@@ -199,6 +199,7 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
         const options = {
             httpOnly: true,
             secure: true,
+            sameSite: "None",
         };
 
         const { accessToken, refreshToken } =
@@ -207,11 +208,11 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
         return res
             .status(200)
             .cookie("accessToken", accessToken, options)
-            .cookie("refreshToken", newRefreshToken, options)
+            .cookie("refreshToken", refreshToken, options)
             .json(
                 new ApiResponse(
                     200,
-                    { accessToken, refreshToken: newRefreshToken },
+                    { accessToken, refreshToken },
                     "Access token refreshed "
                 )
             );
