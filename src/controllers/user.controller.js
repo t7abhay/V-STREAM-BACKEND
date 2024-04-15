@@ -224,7 +224,7 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
 const changeCurrentPassword = asyncHandler(async (req, res) => {
     const { oldPassword, newPassword, confirmPassword } = req.body;
 
-    // if user can change password , that means user is already logged in, and that logged user can be accessed by auth_middleware - > req.user
+    console.log({ oldPassword, newPassword, confirmPassword });
     const user = await User.findById(req.user?._id);
 
     const isPasswordCorrect = await user.isPasswordCorrect(oldPassword);
@@ -252,26 +252,28 @@ const getCurrentUser = asyncHandler(async (req, res) => {
 });
 
 const updateAccountDetails = asyncHandler(async (req, res) => {
-    const { username, fullName, email } = req.body;
+    const { username, fullName } = req.body;
 
-    if (!fullName || !email || !username) {
-        throw new ApiError(400, "Fill all required information ");
+    if (!(username || fullName)) {
+        throw new ApiError(400, "All fields are required");
     }
     const user = await User.findByIdAndUpdate(
         req.user?._id,
         {
             $set: {
                 fullName,
-                email,
                 username,
+
             },
         },
         { new: true }
-    ).select("-password");
+    ).select("-password -refreshToken");
 
     return res
         .status(200)
-        .json(new ApiResponse(200, "Account details updated successfully "));
+        .json(
+            new ApiResponse(200, user, "Account details updated successfully ")
+        );
 });
 
 const getUserChannelProfile = asyncHandler(async (req, res) => {
@@ -282,14 +284,14 @@ const getUserChannelProfile = asyncHandler(async (req, res) => {
 
     // defining aggregation pipelines
     const channel = await User.aggregate([
-        //stage 1 : match username in all documents ,optionally chained them to lowercase
+        //Stage 1 : match username in all documents ,optionally chained them to lowercase
         {
             $match: {
                 username: username?.toLowerCase(),
             },
         },
 
-        //stage 2 : Doing lookup for subscription from subscription model/schema
+        //Stage 2 : Doing lookup for subscription from subscription model/schema
         {
             // lookup for all user documents
             // to search for users using _id

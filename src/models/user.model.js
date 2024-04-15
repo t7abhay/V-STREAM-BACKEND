@@ -28,16 +28,27 @@ const userSchema = new Schema(
             trim: true,
             index: true,
         },
-
         avatar: {
-            type: String,
-            required: true,
+            public_id: {
+                type: String,
+                required: true,
+            },
+            url: {
+                type: String,
+                required: true,
+            },
         },
 
         coverImage: {
-            type: String,
+            public_id: {
+                type: String,
+                required: true,
+            },
+            url: {
+                type: String,
+                required: false,
+            },
         },
-
         watchhistory: [
             {
                 type: mongoose.Schema.Types.ObjectId,
