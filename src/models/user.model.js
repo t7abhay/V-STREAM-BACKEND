@@ -2,7 +2,6 @@ import mongoose, { Schema } from "mongoose";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
 
-//basic schema
 const userSchema = new Schema(
     {
         username: {
@@ -42,7 +41,7 @@ const userSchema = new Schema(
         coverImage: {
             public_id: {
                 type: String,
-                required: true,
+                required: false,
             },
             url: {
                 type: String,
@@ -68,9 +67,9 @@ const userSchema = new Schema(
 );
 
 /* 
-This is a middle ware and the reason why we 
-dont use arrow function for  the call back is because we need to reference this middle ware to userSchema.add
-the middle ware request next to pass it as flag */
+This is a middleware and the reason why we 
+dont use arrow function for  the callback is because we need to reference this middleware to userSchema.add
+the middleware request next to pass it as flag */
 
 // Middleware to hash the password
 userSchema.pre("save", async function (next) {

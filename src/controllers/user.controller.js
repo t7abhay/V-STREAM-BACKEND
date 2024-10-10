@@ -39,11 +39,15 @@ const registerUser = asyncHandler(async (req, res) => {
     });
 
     if (existedUser) {
-        throw new ApiError(409, "User with username or email already exists");
+        throw new ApiError(
+            409,
+            "User with this  username or email already exists"
+        );
     }
 
     let coverImageLocalPath = null;
     let coverImageUrl = null;
+    let coverImageId = null;
     if (
         req.files &&
         req.files.coverImage &&
@@ -59,6 +63,7 @@ const registerUser = asyncHandler(async (req, res) => {
         );
         if (coverImage) {
             coverImageUrl = coverImage.url;
+            coverImageId = coverImage._id;
         }
     }
     const avatarLocalPath = req.files?.avatar[0]?.path;
@@ -80,8 +85,15 @@ const registerUser = asyncHandler(async (req, res) => {
         fullName,
         email,
         password,
-        avatar: avatar.url,
-        coverImage: coverImageUrl,
+        avatar: {
+            public_id: avatar.public_id,
+            url: avatar.secure_url,
+        },
+
+        coverImage: {
+            public_id: coverImageId,
+            url: coverImageUrl,
+        },
     });
 
     const createdUser = await User.findById(user._id).select(
@@ -100,9 +112,8 @@ const registerUser = asyncHandler(async (req, res) => {
 
 const loginUser = asyncHandler(async (req, res) => {
     const { email, username, password } = req.body;
-
     if (!(username || email)) {
-        throw new ApiError(400, "username or email is required");
+        throw new ApiError(400, "Username or email is required");
     }
 
     const user = await User.findOne({
@@ -130,6 +141,7 @@ const loginUser = asyncHandler(async (req, res) => {
     const options = {
         httpOnly: true,
         secure: true,
+        sameSite: "None",
     };
 
     return res
@@ -137,11 +149,15 @@ const loginUser = asyncHandler(async (req, res) => {
         .cookie("accessToken", accessToken, options)
         .cookie("refreshToken", refreshToken, options)
         .json(
-            new ApiResponse(200, {
-                user: loggedInUser,
-                accessToken,
-                refreshToken,
-            })
+            new ApiResponse(
+                200,
+                {
+                    user: loggedInUser,
+                    accessToken,
+                    refreshToken,
+                },
+                "User logged in"
+            )
         );
 });
 
@@ -167,7 +183,7 @@ const logOutUser = asyncHandler(async (req, res) => {
         .status(200)
         .clearCookie("accessToken", options)
         .clearCookie("refreshToken", options)
-        .json(new ApiResponse(200, {}, "User loggedOut"));
+        .json(new ApiResponse(200, {}, "User logged out"));
 });
 
 const refreshAccessToken = asyncHandler(async (req, res) => {
@@ -224,7 +240,6 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
 const changeCurrentPassword = asyncHandler(async (req, res) => {
     const { oldPassword, newPassword, confirmPassword } = req.body;
 
-    console.log({ oldPassword, newPassword, confirmPassword });
     const user = await User.findById(req.user?._id);
 
     const isPasswordCorrect = await user.isPasswordCorrect(oldPassword);
@@ -248,7 +263,9 @@ const changeCurrentPassword = asyncHandler(async (req, res) => {
 });
 
 const getCurrentUser = asyncHandler(async (req, res) => {
-    return res.status(200).json(200, req.user, "Current user fetched");
+    return res
+        .status(200)
+        .json(new ApiResponse(200, req.user, "Current user fetched"));
 });
 
 const updateAccountDetails = asyncHandler(async (req, res) => {
@@ -263,7 +280,6 @@ const updateAccountDetails = asyncHandler(async (req, res) => {
             $set: {
                 fullName,
                 username,
-
             },
         },
         { new: true }

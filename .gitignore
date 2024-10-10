@@ -158,3 +158,4 @@ dist
 .history
 .ionide
 pnpm-lock.yaml
+pnpm-lock.json
