@@ -141,111 +141,93 @@ const publishAVideo = asyncHandler(async (req, res) => {
         .status(200)
         .json(new ApiResponse(200, video, "Video uploaded successfully"));
 });
-
 const getVideoById = asyncHandler(async (req, res) => {
     const { videoId } = req.params;
 
     if (!isValidObjectId(videoId)) {
-        throw new ApiError(400, "Invalid video id");
+        throw new ApiError(400, "Invalid videoId");
     }
 
-    if (!isValidObjectId(userId)) {
-        throw new ApiError(400, "Invalid user id");
+    if (!isValidObjectId(req.user?._id)) {
+        throw new ApiError(400, "Invalid userId");
     }
 
-    const video = await Video.create([
-        // stage 1 we match the video
+    const video = await Video.aggregate([
         {
             $match: {
                 _id: new mongoose.Types.ObjectId(videoId),
             },
         },
-
-        // stage 2 to total number of likes of video
         {
-            // likes
             $lookup: {
-                form: "likes", // like model
-                localField: "_id", // the video id
+                from: "likes",
+                localField: "_id",
                 foreignField: "video",
                 as: "likes",
             },
         },
-
-        // stage 3 the channel and its owner realated information
         {
             $lookup: {
                 from: "users",
-                localField: "owner", // video model , the owner
-
-                foreignField: "_id", // user id from user model
+                localField: "owner",
+                foreignField: "_id",
                 as: "owner",
-
-                searchPipeline: [
+                pipeline: [
                     {
                         $lookup: {
-                            form: "subscriptions",
+                            from: "subscriptions",
                             localField: "_id",
-                            foreginField: "channel",
+                            foreignField: "channel",
                             as: "subscribers",
                         },
                     },
-
                     {
                         $addFields: {
-                            subscriberCount: {
+                            subscribersCount: {
                                 $size: "$subscribers",
                             },
-
                             isSubscribed: {
                                 $cond: {
                                     if: {
                                         $in: [
                                             req.user?._id,
-                                            "$subscribers.subscriber ",
+                                            "$subscribers.subscriber",
                                         ],
                                     },
-
                                     then: true,
                                     else: false,
                                 },
                             },
                         },
                     },
-
                     {
                         $project: {
                             username: 1,
                             "avatar.url": 1,
-
-                            subscriberCount: 1,
+                            subscribersCount: 1,
                             isSubscribed: 1,
                         },
                     },
                 ],
             },
         },
-
         {
             $addFields: {
                 likesCount: {
                     $size: "$likes",
                 },
                 owner: {
-                    $first: "$owner", // does that owner exist?
+                    $first: "$owner",
                 },
-
                 isLiked: {
                     $cond: {
-                        if: { $in: [req.user?.id, "$likes.likedBy"] },
-
+                        if: { $in: [req.user?._id, "$likes.likedBy"] },
                         then: true,
                         else: false,
                     },
                 },
             },
         },
-
         {
             $project: {
                 "videoFile.url": 1,
@@ -263,10 +245,17 @@ const getVideoById = asyncHandler(async (req, res) => {
     ]);
 
     if (!video) {
-        throw new ApiError(400, "Video not found");
+        throw new ApiError(500, "failed to fetch video");
     }
-    // it will appened the video inside wathcHistory which itself is an array, if the video is already presnt in the wathcHistory it wont be appending the video.
 
+    // increment views if video fetched successfully
+    await Video.findByIdAndUpdate(videoId, {
+        $inc: {
+            views: 1,
+        },
+    });
+
+    // add this video to user watch history
     await User.findByIdAndUpdate(req.user?._id, {
         $addToSet: {
             watchHistory: videoId,
@@ -275,7 +264,9 @@ const getVideoById = asyncHandler(async (req, res) => {
 
     return res
         .status(200)
-        .json(new ApiResponse(200, video[0], "Video successfully fetced"));
+        .json(
+            new ApiResponse(200, video[0], "video details fetched successfully")
+        );
 });
 const updateVideo = asyncHandler(async (req, res) => {
     const { videoId } = req.body;
@@ -356,46 +347,44 @@ const updateVideo = asyncHandler(async (req, res) => {
             )
         );
 });
-
 const deleteVideo = asyncHandler(async (req, res) => {
-    // we need video id to delete a video.
-    // ! also need to find that video in db
-    // also need to unset all the stuff from db and cloudinary
-    // check for the video id validatio
-    // check for user ownership for deleting the video
-
-    // ! delete video and thumbnail from db and cloudinary
-
     const { videoId } = req.params;
 
     if (!isValidObjectId(videoId)) {
-        throw new ApiError(404, "Invalid video id");
+        throw new ApiError(400, "Invalid ");
     }
 
     const video = await Video.findById(videoId);
 
     if (!video) {
-        throw new ApiError(404, "Video not found");
+        throw new ApiError(404, "No video found");
     }
 
-    if (video?.owner.toString() !== req.user?.user.toString()) {
+    if (video?.owner.toString() !== req.user?._id.toString()) {
         throw new ApiError(
-            403,
-            "Access denied , only owner of this video is allowed to modify the video"
+            400,
+            "You can't delete this video as you are not the owner"
         );
     }
 
-    const videoDelete = await Video.findByIdAndDelete(video?._id);
+    const videoDeleted = await Video.findByIdAndDelete(video?._id);
 
-    if (!videoDelete) {
-        throw new ApiError(500, "Error while deleting video");
+    if (!videoDeleted) {
+        throw new ApiError(400, "Failed to delete the video please try again");
     }
 
-    await deleteOnCloudinary(video.thumbnail.public_id);
-    await deleteOnCloudinary(video.videoFile.public_id, "video");
+    await deleteOnCloudinary(video.thumbnail.public_id); // video model has thumbnail public_id stored in it->check videoModel
+    await deleteOnCloudinary(video.videoFile.public_id, "video"); // specify video while deleting video
 
-    await Likes.deleteMany({ video: video_id });
-    await Comments.deleteMany({ video: video_id });
+    // delete video likes
+    await Like.deleteMany({
+        video: videoId,
+    });
+
+    // delete video comments
+    await Comment.deleteMany({
+        video: videoId,
+    });
 
     return res
         .status(200)
