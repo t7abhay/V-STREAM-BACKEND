@@ -3,17 +3,17 @@ import { Tweet } from "../models/tweet.model.js";
 import { ApiError } from "../utilities/ApiError.js";
 import { ApiResponse } from "../utilities/ApiResponse.js";
 import { asyncHandler } from "../utilities/asyncHandler.js";
+import mongoose from "mongoose";
 
 const createTweet = asyncHandler(async (req, res) => {
     const { content } = req.body;
-    const { userId } = req.user?._id;
 
     if (!content) {
         throw new ApiError(400, "Content is requried");
     }
     const tweet = await Tweet.create({
         content,
-        owner: userId,
+        owner: req.user?._id,
     });
 
     if (!tweet) {
@@ -27,7 +27,6 @@ const createTweet = asyncHandler(async (req, res) => {
 const updateTweet = asyncHandler(async (req, res) => {
     const { content } = req.body;
     const { tweetId } = req.params;
-
     if (!isValidObjectId(tweetId)) {
         throw new ApiError(400, "Invalid tweet id ");
     }
@@ -41,7 +40,7 @@ const updateTweet = asyncHandler(async (req, res) => {
         throw new ApiError(404, "Tweet not found");
     }
 
-    if (tweet?.owner.toString() !== req.user?._id) {
+    if (tweet?.owner.toString() !== req.user?._id.toString()) {
         throw new ApiError(400, "only owner can edit thier tweet");
     }
 
