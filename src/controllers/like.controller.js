@@ -6,7 +6,7 @@ import { asyncHandler } from "../utilities/asyncHandler.js";
 
 const toogleVideoLike = asyncHandler(async (req, res) => {
     const { videoId } = req.params;
-
+    console.log(videoId);
     if (!isValidObjectId(videoId)) {
         throw new ApiError(400, "Invalid video id");
     }
@@ -14,10 +14,6 @@ const toogleVideoLike = asyncHandler(async (req, res) => {
         video: videoId,
         likedBy: req.user?._id,
     });
-
-    // user sam and he has liked pokemon video
-
-    // it goes inside out like collection , it  tries to find a document , in which there is a user  with userid : uwdfosaso, videoid:D
 
     if (isLiked) {
         await Like.findByIdAndDelete(isLiked?._id);
@@ -32,7 +28,9 @@ const toogleVideoLike = asyncHandler(async (req, res) => {
         likedBy: req.user?._id,
     });
 
-    return res.status(200).json(new ApiResponse(200, { isLiked: true }, ""));
+    return res
+        .status(200)
+        .json(new ApiResponse(200, { isLiked: true }, "Changed like status"));
 });
 
 const toggleCommentLike = asyncHandler(async (req, res) => {
@@ -91,17 +89,11 @@ const toggleTweetLike = asyncHandler(async (req, res) => {
 const getLikedVideos = asyncHandler(async (req, res) => {
     const aggregatelikedVideo = await Like.aggregate([
         {
-            // got all documents where likedBy = userId
             $match: {
-                likedBy: new mongoose.Types.ObjectId(req.user?._id),
+                likedBy: new mongoose.Types.ObjectId(`${req.user?._id}`),
             },
         },
 
-        // took all video id's from  all matched docs
-        // mashed everything into pipeline where:
-        //found all owners of those videos by their video id
-        // used unwind to deconstruct everything that we got from the previous stage and reconstruct the result for each element or in this case video
-        // then projected everything that is needed to show all liked videos
         {
             $lookup: {
                 from: "videos",
@@ -156,9 +148,13 @@ const getLikedVideos = asyncHandler(async (req, res) => {
     ]);
 
     return res
-        .statu(200)
+        .status(200)
         .json(
-            new ApiResponse(200, aggregatelikedVideo, " liked videos fetched successfully")
+            new ApiResponse(
+                200,
+                aggregatelikedVideo,
+                " liked videos fetched successfully"
+            )
         );
 });
 
