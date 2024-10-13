@@ -5,7 +5,7 @@ import { Like } from "../models/like.model.js";
 import { ApiError } from "../utilities/ApiError.js";
 import { ApiResponse } from "../utilities/ApiResponse.js";
 import { asyncHandler } from "../utilities/asyncHandler.js";
-
+import mongoose from "mongoose";
 const createComment = asyncHandler(async (req, res) => {
     const { content } = req.body;
 
@@ -39,28 +39,27 @@ const updateComment = asyncHandler(async (req, res) => {
         throw new ApiError(400, "Invalid comment ID");
     }
 
-    const comment = await Comment.FindById(commentId);
+    const comment = await Comment.findById(commentId);
 
     if (!comment) {
         throw new ApiError(404, "Comment not found");
     }
-
-    if (Comment.commentId.toString() !== req.user?._id.toString()) {
+    if (comment?.owner.toString() !== req.user?._id.toString()) {
         throw new ApiError(400, "Not Authorised ");
     }
 
-    const newComment = await Comment.FindByIdAndUpdate(
+    const newComment = await Comment.findByIdAndUpdate(
+        comment?._id,
         {
             $set: {
                 content,
-                owner: req.user?._id,
             },
         },
         { new: true }
     );
 
     if (!newComment) {
-        throw new ApiError(500, "Error while updating comment, !Please retry");
+        throw new ApiError(500, "Error while updating comment, ! Please retry");
     }
 
     return res
@@ -74,7 +73,7 @@ const deleteComment = asyncHandler(async (req, res) => {
         throw new ApiError(400, "Invalid comment id");
     }
 
-    const comment = await Comment.FindById(commentId);
+    const comment = await Comment.findById(commentId);
 
     if (!comment) {
         throw new ApiError(404, "Comment not found");
@@ -84,7 +83,7 @@ const deleteComment = asyncHandler(async (req, res) => {
         throw new ApiError(403, "Not authorized");
     }
 
-    const deletedComment = await Comment.FindByIdAndDelete(commentId);
+    const deletedComment = await Comment.findByIdAndDelete(commentId);
 
     if (!deletedComment) {
         throw new ApiError(500, "Error while deleting ");
@@ -105,7 +104,7 @@ const getVideoComments = asyncHandler(async (req, res) => {
         throw new ApiError(400, "Invaid video id ");
     }
 
-    const video = await Video.FindById(videoId);
+    const video = await Video.findById(videoId);
     if (!video) {
         throw new ApiError(404, "Video not found");
     }
@@ -113,7 +112,7 @@ const getVideoComments = asyncHandler(async (req, res) => {
     const commentsAggregate = await Comment.aggregate([
         {
             $match: {
-                owner: new mongoose.Types.ObjectId(videoId),
+                owner: new mongoose.Types.ObjectId(`${videoId}`),
             },
         },
 
@@ -171,6 +170,10 @@ const getVideoComments = asyncHandler(async (req, res) => {
         },
     ]);
 
+    const options = {
+        page: parseInt(page, 10),
+        limit: parseInt(limit, 10),
+    };
     const comments = await Comment.aggregatePaginate(
         commentsAggregate,
         options

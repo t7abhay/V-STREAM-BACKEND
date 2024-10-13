@@ -1,5 +1,4 @@
 import mongoose, { Schema } from "mongoose";
-import { diskStorage } from "multer";
 
 const subscriptionSchema = new Schema(
    {

@@ -9,12 +9,11 @@ import { verifyJWT } from "../middlewares/auth.middleware.js";
 const router = Router();
 router.use(verifyJWT);
 
-
 router
-    .route("/c/:channelId")
+    .route("/channel/:channelId")
     .get(getUserChannelSubscribers)
     .post(toggleSubscription);
 
-router.route("/u/:subscriberId").get(getSubscribedChannels);
+router.route("/channel/:subscriberId").get(getSubscribedChannels);
 
 export default router;

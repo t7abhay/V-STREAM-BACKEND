@@ -1,6 +1,7 @@
 import { ApiError } from "../utilities/ApiError.js";
 import { ApiResponse } from "../utilities/ApiResponse.js";
 import { Playlist } from "../models/playlist.model.js";
+import { Video } from "../models/video.model.js";
 import { asyncHandler } from "../utilities/asyncHandler.js";
 import mongoose, { isValidObjectId } from "mongoose";
 
@@ -97,7 +98,7 @@ const deletePlaylist = asyncHandler(async (req, res) => {
 });
 
 const getUserPlaylist = asyncHandler(async (req, res) => {
-    const { userId } = req.user?._id;
+    const { userId } = req.params;
 
     if (!isValidObjectId(userId)) {
         throw new ApiError("Invalid user id");
@@ -106,14 +107,14 @@ const getUserPlaylist = asyncHandler(async (req, res) => {
     const playlists = await Playlist.aggregate([
         {
             $match: {
-                owner: new mongoose.Types.ObjectId(userId),
+                owner: new mongoose.Types.ObjectId(`${userId}`),
             },
         },
 
         {
             $lookup: {
-                from: "video",
-                localField: "video",
+                from: "videos",
+                localField: "videos",
                 foreignField: "_id",
                 as: "videos",
             },
@@ -277,7 +278,7 @@ const addVideoToPlaylist = asyncHandler(async (req, res) => {
     if (!updatedPlaylist) {
         throw new ApiError(
             400,
-            "failed to add video to playlist please try again"
+            "failed to add video to playlist please try again"``
         );
     }
 
@@ -291,7 +292,6 @@ const addVideoToPlaylist = asyncHandler(async (req, res) => {
             )
         );
 });
-
 
 const removeVideoFromPlaylist = asyncHandler(async (req, res) => {
     const { videoId, playlistId } = req.params;
@@ -312,7 +312,10 @@ const removeVideoFromPlaylist = asyncHandler(async (req, res) => {
         (playlist.owner?.toString() && video.owner.toString()) !==
         req.user?._id.toString()
     ) {
-        throw new ApiError(400, "only owner can remove video to thier playlist");
+        throw new ApiError(
+            400,
+            "only owner can remove video to thier playlist"
+        );
     }
 
     const updatedPlaylist = await Playlist.findByIdAndUpdate(
