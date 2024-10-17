@@ -1,7 +1,8 @@
 # CineBite
 ### A Flavorful Collection of APIs for All Your Video Needs!
+<h6><a href="https://app.eraser.io/workspace/oa4ZWggCH8RBOBBS0o4T" target="_blank">Click to be surprised [MODEL]</a>
+</h6>
 
-######  Click to be surprised [MODEL](https://app.eraser.io/workspace/oa4ZWggCH8RBOBBS0o4T)
 <details open>
 <summary>Want to ruin the surprise?</summary>
 <br>
