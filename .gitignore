@@ -1,7 +1,7 @@
 ### Node ###
 # Logs
 temp.js
-
+pnpm-lock.yaml
 
 logs
 *.log

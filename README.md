@@ -1,8 +1,19 @@
 # CineBite
 ### A Flavorful Collection of APIs for All Your Video Needs!
 
-[Model](https://app.eraser.io/workspace/oa4ZWggCH8RBOBBS0o4T)
+######  Click to be surprised [MODEL](https://app.eraser.io/workspace/oa4ZWggCH8RBOBBS0o4T)
+<details open>
+<summary>Want to ruin the surprise?</summary>
+<br>
+
+![FIRST_GLIMPS](https://raw.githubusercontent.com/t7abhay/logos/refs/heads/main/1.png)
+![SECOND_GLIMPS](https://raw.githubusercontent.com/t7abhay/logos/refs/heads/main/2.png)
+![THIRD_GLIMPS](https://raw.githubusercontent.com/t7abhay/logos/refs/heads/main/3.png)
+
+</details>
+
 ****
+
 
 
 
