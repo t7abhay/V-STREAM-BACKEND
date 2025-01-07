@@ -1,31 +1,33 @@
 {
-  "name": "sus backend",
-  "version": "1.0.0",
-  "description": "try",
-  "main": "index.js",
-  "type": "module",
-  "scripts": {
-    "dev": "nodemon -r dotenv/config --experimental-json-modules src/index.js "
-  },
-  "author": "",
-  "license": "ISC",
-  "devDependencies": {
-    "nodemon": "^3.1.7",
-    "prettier": "^3.3.3"
-  },
-  "dependencies": {
-    "bcrypt": "^5.1.1",
-    "cloudinary": "^2.5.1",
-    "cookie-parser": "^1.4.7",
-    "cors": "^2.8.5",
-    "dotenv": "^16.4.5",
-    "express": "^4.21.1",
-    "fs": "0.0.1-security",
-    "jsonwebtoken": "^9.0.2",
-    "mongodb": "^6.9.0",
-    "mongoose": "^8.7.1",
-    "mongoose-aggregate-paginate-v2": "^1.1.2",
-    "morgan": "^1.10.0",
-    "multer": "1.4.5-lts.1"
-  }
+    "name": "vstream-backend",
+    "version": "1.0.0",
+    "description": "try",
+    "main": "index.js",
+    "type": "module",
+    "scripts": {
+        "dev": "nodemon -r dotenv/config --experimental-json-modules src/index.js ",
+        "test": "jest"
+    },
+    "author": "abhay",
+    "license": "ISC",
+    "devDependencies": {
+        "jest": "^29.7.0",
+        "nodemon": "^3.1.9",
+        "prettier": "^3.4.2"
+    },
+    "dependencies": {
+        "bcrypt": "^5.1.1",
+        "cloudinary": "^2.5.1",
+        "cookie-parser": "^1.4.7",
+        "cors": "^2.8.5",
+        "dotenv": "^16.4.7",
+        "express": "^4.21.2",
+        "fs": "0.0.1-security",
+        "jsonwebtoken": "^9.0.2",
+        "mongodb": "^6.12.0",
+        "mongoose": "^8.9.3",
+        "mongoose-aggregate-paginate-v2": "^1.1.2",
+        "morgan": "^1.10.0",
+        "multer": "1.4.5-lts.1"
+    }
 }

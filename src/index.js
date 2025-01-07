@@ -1,13 +1,11 @@
 import connectDB from "./db/index.js";
-import {app} from "./app.js";
+import { app } from "./app.js";
 
 process.loadEnvFile();
-
 connectDB()
     .then(() => {
         app.on("error", (error) => {
             console.log("Error", error);
-       
         });
         app.listen(process.env.PORT || 8000, () => {
             console.log(`Server is running at ${process.env.PORT}`);

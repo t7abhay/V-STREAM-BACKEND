@@ -1,1 +1,1 @@
-export const DB_NAME = "youtubetube"
+export const DB_NAME = "Vstream";

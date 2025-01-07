@@ -21,7 +21,7 @@ const getAllVideos = asyncHandler(async (req, res) => {
                 index: "full-text-search-index",
                 text: {
                     query: query,
-                    path: ["title", "description"], //search only on title, description
+                    path: ["title", "description"], //Search only on title, description
                 },
             },
         });
@@ -39,11 +39,8 @@ const getAllVideos = asyncHandler(async (req, res) => {
         });
     }
 
-    // fetch videos only that are set isPublished as true
     searchPipeline.push({ $match: { isPublished: true } });
 
-    //sortBy can be views, createdAt, duration
-    //sortType can be ascending(-1) or descending(1)
     if (sortBy && sortType) {
         searchPipeline.push({
             $sort: {
@@ -131,8 +128,8 @@ const publishAVideo = asyncHandler(async (req, res) => {
         owner: req.user?._id,
         isPublished: false,
     });
-    // The second verification to check if  the video has been uploaded on the database
-
+    /*  The second verification to check 
+     if  the video has been uploaded on the database */
     const isVideoUploaded = await Video.findById(video._id);
 
     if (!isVideoUploaded) {
@@ -249,7 +246,7 @@ const getVideoById = asyncHandler(async (req, res) => {
         throw new ApiError(500, "failed to fetch video");
     }
 
-    // increment views if video fetched successfully
+    // Increase views if video fetched successfully
     await Video.findByIdAndUpdate(videoId, {
         $inc: {
             views: 1,

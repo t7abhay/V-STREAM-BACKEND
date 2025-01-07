@@ -1,7 +1,6 @@
 import { isValidObjectId } from "mongoose";
 import { Comment } from "../models/comment.model.js";
 import { Video } from "../models/video.model.js";
-import { Like } from "../models/like.model.js";
 import { ApiError } from "../utilities/ApiError.js";
 import { ApiResponse } from "../utilities/ApiResponse.js";
 import { asyncHandler } from "../utilities/asyncHandler.js";
@@ -10,7 +9,7 @@ const createComment = asyncHandler(async (req, res) => {
     const { content } = req.body;
 
     if (!content) {
-        throw new ApiError(400, "Content in comment required");
+        throw new ApiError(400, "Comment cannot be empty");
     }
 
     const comment = await Comment.create({
@@ -19,7 +18,7 @@ const createComment = asyncHandler(async (req, res) => {
     });
 
     if (!comment) {
-        throw new ApiError(500, "Failed to create a comment, !Please retry");
+        throw new ApiError(500, "Failed to create a comment !, Please retry");
     }
 
     return res
