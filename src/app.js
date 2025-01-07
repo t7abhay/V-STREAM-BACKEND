@@ -7,7 +7,7 @@ const app = new express();
 
 app.use(
     cors({
-        origin: ["https://v-stream-backend-snva.vercel.app"],
+        origin: ["CHANGE IT ABHAYS"],
         methods: ["POST", "GET"],
         credentials: true,
     })
