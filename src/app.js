@@ -7,7 +7,7 @@ const app = new express();
 
 app.use(
     cors({
-        origin: ["CHANGE IT ABHAYS"],
+        origin: ["https://v-stream-frontend.vercel.app/"],
         methods: ["POST", "GET"],
         credentials: true,
     })
