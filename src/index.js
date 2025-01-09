@@ -1,5 +1,5 @@
 import connectDB from "../src/db/databaseConnect.js";
-import { app } from "./src/app.js";
+import { app } from "./app.js";
 process.loadEnvFile();
 connectDB()
     .then(() => {
