@@ -1,4 +1,4 @@
-import connectDB from "../src/db/databaseConnect.js";
+import connectDB from "./db/databaseConnect.js";
 import { app } from "./app.js";
 process.loadEnvFile();
 connectDB()
