@@ -4,7 +4,6 @@ import cookieParser from "cookie-parser";
 import morgan from "morgan";
 
 const app = new express();
-
 app.use(
     cors({
         origin: process.env.CORS_ORIGIN,
