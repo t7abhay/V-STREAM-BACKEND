@@ -4,14 +4,18 @@ import cookieParser from "cookie-parser";
 import morgan from "morgan";
 
 const app = new express();
-app.use(
-    cors({
-        origin: process.env.CORS_ORIGIN,
-        credentials: true,
-    })
-);
-app.options("*", cors());
+const corsOptions = {
+    origin: process.env.CORS_ORIGIN || "https://vstreamstuff.vercel.app", // Allow specific frontend origin
+    credentials: true, // Allow cookies or credentials (session cookies, etc.)
+    allowedHeaders: [
+        "Content-Type", // Allow JSON payloads
+        "Authorization", // Allow authentication tokens (JWT, etc.)
+        "X-Requested-With", // Allow XMLHttpRequest
+    ],
+};
 
+// Apply CORS middleware globally
+app.use(cors(corsOptions));
 app.use(express.json({ limit: "50mb" }));
 app.use(express.urlencoded({ extended: true, limit: "50mb" }));
 app.use(express.static("public"));
