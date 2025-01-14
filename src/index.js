@@ -1,18 +1,31 @@
-import connectDB from "./db/databaseConnect.js";
-import { app } from "./app.js";
-import dotenv from "dotenv";
+import dotenv from 'dotenv'
+import connectToDB from './db/dbConnect.js'
+import app from './app.js'
 
 dotenv.config({
-    path: "./.env",
-});
+    path: '/env'  
+})
 
-connectDB()
-    .then(() => {
-        // No need to listen on a port in Vercel serverless functions
-        console.log("MongoDB connected successfully.");
+connectToDB()
+.then(() => {
+    app.listen(process.env.PORT || 8000, () => {
+        console.log(`Server is listening on: ${process.env.PORT}`);
     })
-    .catch((err) => {
-        console.log("MONGO DB CONNECTION FAILED !! ", err);
-    });
+})
+.catch((error) => console.log("MONGODB connection failed!!!: ", error))
 
-export default app; // Export app for Vercel to handle the request
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
