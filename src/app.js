@@ -5,8 +5,9 @@ import morgan from "morgan";
 
 const app = new express();
 
+console.log(process.env.CORS_ORIGIN);
 const corsOptions = {
-    origin: process.env.CORS_ORIGIN || "https://vstreamstuff.vercel.app", // Allow specific frontend origin
+    origin: process.env.CORS_ORIGIN, // Allow specific frontend origin
     credentials: true, // Allow cookies and credentials (session cookies, etc.)
     allowedHeaders: [
         "Content-Type", // Allow JSON payloads
@@ -17,7 +18,6 @@ const corsOptions = {
 app.use(cors(corsOptions));
 app.options("*", cors(corsOptions));
 
-res.setHeader("Access-Control-Allow-Origin", "http://");
 app.use(express.json({ limit: "50mb" }));
 app.use(express.urlencoded({ extended: true, limit: "50mb" }));
 app.use(express.static("public"));
