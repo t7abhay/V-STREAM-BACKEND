@@ -8,7 +8,13 @@ const app = new express();
 app.use(
     cors({
         origin: process.env.CORS_ORIGIN,
-        methods: ["POST", "GET"],
+        credentials: true,
+    })
+);
+app.options(
+    "*",
+    cors({
+        origin: process.env.CORS_ORIGIN || "http://localhost:5173",
         credentials: true,
     })
 );
@@ -19,7 +25,7 @@ app.use(express.static("public"));
 app.use(cookieParser());
 app.use(morgan("dev")); //HTTP request logger middleware for node.js
 
-//routes import
+
 
 import userRouter from "./routes/user.routes.js";
 import commentRouter from "./routes/comment.routes.js";

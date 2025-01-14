@@ -1,6 +1,11 @@
 import connectDB from "./db/databaseConnect.js";
 import { app } from "./app.js";
-process.loadEnvFile();
+import dotenv from "dotenv";
+// process.loadEnvFile();
+
+dotenv.config({
+    path: "./.env",
+});
 connectDB()
     .then(() => {
         app.on("error", (error) => {
@@ -13,3 +18,6 @@ connectDB()
     .catch((err) => {
         console.log("MONGO DB CONNECTION FAILED !! ", err);
     });
+export default (req, res) => {
+    app(req, res); // This ensures Vercel handles the request to the Express app
+};

@@ -17,7 +17,7 @@ const generateAccessAndRefreshTokens = async (userId) => {
         await user.save({ validateBeforeSave: false });
         return { accessToken, refreshToken };
     } catch (error) {
-        throw new ApiErrwor(
+        throw new ApiError(
             500,
             "Something went wrong while generating refresh and access token"
         );
@@ -27,6 +27,7 @@ const generateAccessAndRefreshTokens = async (userId) => {
 const registerUser = asyncHandler(async (req, res) => {
     const { fullName, email, username, password } = req.body;
 
+    console.log(fullName, username, email);
     if (
         [fullName, email, username, password].some(
             (field) => field?.trim() === ""
