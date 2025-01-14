@@ -6,7 +6,7 @@ import morgan from "morgan";
 const app = new express();
 app.use(
     cors({
-        origin: process.env.CORS_ORIGIN,
+        origin: ["https://vstreamstuff.vercel.app"],
         credentials: true,
     })
 );
