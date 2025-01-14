@@ -92,8 +92,8 @@ const registerUser = asyncHandler(async (req, res) => {
         },
 
         coverImage: {
-            public_id: coverImageId,
-            url: coverImageUrl,
+            public_id: coverImageId || "",
+            url: coverImageUrl || "",
         },
     });
 

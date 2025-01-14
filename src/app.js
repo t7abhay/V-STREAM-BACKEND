@@ -5,7 +5,7 @@ import morgan from "morgan";
 
 const app = new express();
 const corsConfig = {
-    origin: "*",
+    origin: process.env.CORS_ORIGIN,
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
 };
