@@ -5,18 +5,14 @@ import dotenv from "dotenv";
 dotenv.config({
     path: "./.env",
 });
+
 connectDB()
     .then(() => {
-        app.on("error", (error) => {
-            console.log("Error", error);
-        });
-        app.listen(process.env.PORT || 8000, () => {
-            console.log(`Server is running at ${process.env.PORT}`);
-        });
+        // No need to listen on a port in Vercel serverless functions
+        console.log("MongoDB connected successfully.");
     })
     .catch((err) => {
         console.log("MONGO DB CONNECTION FAILED !! ", err);
     });
-export default (req, res) => {
-    app(req, res);  
-};
+
+export default app; // Export app for Vercel to handle the request
