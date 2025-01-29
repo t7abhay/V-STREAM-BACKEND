@@ -4,6 +4,7 @@ import cookieParser from "cookie-parser";
 import morgan from "morgan";
 import { rateLimit } from "express-rate-limit";
 import lusca from "lusca";
+import session from "express-session";
 const app = new express();
 
 const limiter = rateLimit({
