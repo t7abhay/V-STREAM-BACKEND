@@ -168,7 +168,7 @@ const getPlaylistById = asyncHandler(async (req, res) => {
     const playlistVideos = await Playlist.aggregate([
         {
             $match: {
-                _id: new mongoose.Types.ObjectId(playlistId),
+                _id: new mongoose.Types.ObjectId(`${playlistId}`),
             },
         },
         {

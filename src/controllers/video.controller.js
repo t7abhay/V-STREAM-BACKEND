@@ -337,13 +337,11 @@ const updateVideo = asyncHandler(async (req, res) => {
 
 const deleteVideo = asyncHandler(async (req, res) => {
     const { videoId } = req.params;
-    console.log("video id->", videoId);
     if (!isValidObjectId(videoId)) {
         throw new ApiError(400, "Invalid videoId");
     }
 
     const video = await Video.findById(videoId);
-    console.log(video);
 
     if (!video) {
         throw new ApiError(404, "No video found");
