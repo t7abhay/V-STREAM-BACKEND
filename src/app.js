@@ -3,7 +3,7 @@ import cors from "cors";
 import cookieParser from "cookie-parser";
 import morgan from "morgan";
 import { rateLimit } from "express-rate-limit";
-import { lusca } from "lusca";
+import lusca  from "lusca";
 const app = new express();
 
 const limiter = rateLimit({
