@@ -21,8 +21,10 @@ const uploadOnCloudinary = async (localFilePath) => {
     }
 };
 
-// Instead of passing the thumbnail to delete, we actually passs its public id and the variable thumbnailToDelete actually stores the public id in the thumbnail which is differes from the newly set thumbnail's public id
-
+/*Instead of passing the thumbnail to delete
+  we actually passs its public id and the variable thumbnailToDelete which actually stores the public id in the thumbnail
+ which  differes from the newly set thumbnail's public id
+ */
 const deleteOnCloudinary = async (public_id, resource_type = "image") => {
     try {
         if (!public_id) return null;
