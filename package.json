@@ -24,10 +24,7 @@
         "dotenv": "^16.4.7",
         "express": "^4.21.2",
         "express-rate-limit": "^7.5.0",
-<<<<<<< HEAD
         "express-session": "^1.18.1",
-=======
->>>>>>> 9a28837e30dd6c7dce0604d90aa14a9c862a0b88
         "fs": "0.0.1-security",
         "jsonwebtoken": "^9.0.2",
         "lusca": "^1.7.0",
