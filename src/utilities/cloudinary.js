@@ -1,5 +1,6 @@
 import { v2 as cloudinary } from "cloudinary";
 import fs from "fs";
+import sanitize from "sanitize-filename";
 cloudinary.config({
     cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
     api_key: process.env.CLOUDINARY_API_KEY,
@@ -7,16 +8,21 @@ cloudinary.config({
 });
 
 const uploadOnCloudinary = async (localFilePath) => {
-    try {
-        if (!localFilePath) return null;
+    let sanitizedLocalFilePath = sanitize(localFilePath);
 
-        const response = await cloudinary.uploader.upload(localFilePath, {
-            resource_type: "auto",
-        });
-        fs.unlinkSync(localFilePath);
+    try {
+        if (!sanitizedLocalFilePath) return null;
+
+        const response = await cloudinary.uploader.upload(
+            sanitizedLocalFilePath,
+            {
+                resource_type: "auto",
+            }
+        );
+        fs.unlinkSync(sanitizedLocalFilePath);
         return response;
     } catch (error) {
-        fs.unlinkSync(localFilePath); // remove locally saved temporary file
+        fs.unlinkSync(sanitizedLocalFilePath); // remove locally saved temporary file
         return null;
     }
 };

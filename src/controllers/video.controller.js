@@ -34,7 +34,7 @@ const getAllVideos = asyncHandler(async (req, res) => {
 
         searchPipeline.push({
             $match: {
-                owner: new mongoose.Types.ObjectId(userId),
+                owner: new mongoose.Types.ObjectId(`${userId}`),
             },
         });
     }
