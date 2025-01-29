@@ -4,6 +4,7 @@ import cookieParser from "cookie-parser";
 import morgan from "morgan";
 import { rateLimit } from "express-rate-limit";
 import { lusca } from "lusca";
+import session from "express-session";
 const app = new express();
 
 const limiter = rateLimit({
@@ -14,6 +15,18 @@ const limiter = rateLimit({
     message: "Rate limited",
     // store: ... , // Redis, Memcached, etc. See below.
 });
+app.use(
+    session({
+        secret: process.env.SESSION_SECRET || "your-secret-key",
+        resave: false,
+        saveUninitialized: true,
+        cookie: {
+            secure: process.env.NODE_ENV === "production", // Use secure cookies in production
+            httpOnly: true,
+            maxAge: 1000 * 60 * 60 * 24, // 1 day
+        },
+    })
+);
 
 const corsConfig = {
     origin: process.env.CORS_ORIGIN,
