@@ -3,7 +3,6 @@ import cors from "cors";
 import cookieParser from "cookie-parser";
 import morgan from "morgan";
 import { rateLimit } from "express-rate-limit";
-import lusca from "lusca";
 import session from "express-session";
 const app = new express();
 
@@ -40,8 +39,7 @@ app.use(express.json({ limit: "50mb" }));
 app.use(express.urlencoded({ extended: true, limit: "50mb" }));
 app.use(express.static("public"));
 app.use(cookieParser());
-app.use(lusca.csrf());
-app.use(morgan("dev")); //HTTP request logger middleware for node.js
+app.use(morgan("dev"));
 
 import userRouter from "./routes/user.routes.js";
 import commentRouter from "./routes/comment.routes.js";
