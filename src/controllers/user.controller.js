@@ -389,65 +389,58 @@ const getUserChannelProfile = asyncHandler(async (req, res) => {
 
 const getWatchHistory = asyncHandler(async (req, res) => {
     const user = await User.aggregate([
-        // Stage:1 Matching the user documents
         {
             $match: {
-                _id: new mongoose.Types.ObjectId(`${req.user?._id}`),
-            },
+                _id: new mongoose.Types.ObjectId(`${req.user._id}`)
+            }
         },
-
-        // Stage 2:  Lookup for video ids as watch history
         {
             $lookup: {
-                from: "videos", // from video schema
-                localField: "watchHistory", // user schema
-                foreignField: "_id", // video id's
-                as: "watchhistory",
+                from: "videos",
+                localField: "watchHistory",
+                foreignField: "_id",
+                as: "watchHistory",
                 pipeline: [
-                    // Stage 3 : from video modal , match ids with owners from user
                     {
                         $lookup: {
-                            from: "users", // user modal
-                            localField: "owner", // the user owns the video
-                            foreignField: "_id", // getting the user id
+                            from: "users",
+                            localField: "owner",
+                            foreignField: "_id",
                             as: "owner",
-
-                            // now we have the user's watch history and the owner of each video that is in watch history
-
-                            // can be done directly but this is the prefered way
-                            // then we project avatar and etc info to display on  watch history page.
                             pipeline: [
                                 {
                                     $project: {
-                                        fullName: 1,
                                         username: 1,
-                                        avatar: 1,
-                                    },
-                                },
-
-                                // for sake of frontend
-                                {
-                                    $addFields: {
-                                        owner: {
-                                            $first: "$owner",
-                                        },
-                                    },
-                                },
-                            ],
-                        },
+                                        fullName: 1,
+                                        avatar: 1
+                                    }
+                                }
+                            ]
+                        }
                     },
-                ],
-            },
-        },
+                    {
+                        $addFields: {
+                            owner: {
+                                $first: "$owner"
+                            }
+                        }
+                    }
+                ]
+            }
+        }
     ]);
 
-    const apiResponse = new ApiResponse(
-        200,
-        user[0].watchHistory,
-        "Watched history fetched successfully"
-    );
-    return res.status(200).json(apiResponse);
+    return res
+        .status(200)
+        .json(
+            new ApiResponse(
+                200,
+                user[0].watchHistory,
+                "Watch history fetched successfully"
+            )
+        )
 });
+
 
 export {
     registerUser,
