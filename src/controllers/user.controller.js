@@ -5,6 +5,7 @@ import { uploadOnCloudinary } from "../utilities/cloudinary.js";
 import { ApiResponse } from "../utilities/ApiResponse.js";
 import { updateUserAvatar } from "./avatarUpdate.controller.js";
 import { updateUserCoverImage } from "./coverImageUpdate.controller.js";
+import { checkEmailExists } from "../utilities/emailValidation.js";
 import jwt from "jsonwebtoken";
 import mongoose from "mongoose";
 
@@ -34,6 +35,13 @@ const registerUser = asyncHandler(async (req, res) => {
     ) {
         throw new ApiError(400, "All fields are required");
     }
+
+    const isValidEmail = await checkEmailExists(email)
+    if (!isValidEmail) {
+        throw new ApiError(400, "Invalid or non-existent email");
+
+    }
+
     const existedUser = await User.findOne({
         $or: [{ username }, { email }],
     });
