@@ -21,8 +21,31 @@ async function checkEmailExists(email) {
         }
     } catch (error) {
         console.error("Email validation error:", error?.response?.data || error.message);
-        throw new ApiError(500, "Email validation service is unavailable"); 
+        throw new ApiError(500, "Email validation service is unavailable");
     }
 }
 
-export { checkEmailExists };
+/*
+@abhaytaras 
+ !!!! Design Decision !!!!
+
+(disposable) property from mailboxlayer api can be used to check disposable emails
+ 
+But due to budget concerns I've decided to go with Sets
+
+SOURCE : https://mailboxlayer.com/documentation
+ 
+*/
+const disposableEmailDomains = new Set([
+    "tempmail.com", "10minutemail.com", "mailinator.com", "guerrillamail.com",
+    "dispostable.com", "yopmail.com", "fakeinbox.com", "maildrop.cc"
+]);
+
+function isDisposableEmail(email) {
+    const domain = email.split("@").pop();
+    return disposableEmailDomains.has(domain);
+}
+
+
+
+export { checkEmailExists, isDisposableEmail };

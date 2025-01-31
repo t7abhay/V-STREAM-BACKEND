@@ -5,7 +5,7 @@ import { uploadOnCloudinary } from "../utilities/cloudinary.js";
 import { ApiResponse } from "../utilities/ApiResponse.js";
 import { updateUserAvatar } from "./avatarUpdate.controller.js";
 import { updateUserCoverImage } from "./coverImageUpdate.controller.js";
-import { checkEmailExists } from "../utilities/emailValidation.js";
+import { checkEmailExists, isDisposableEmail } from "../utilities/emailValidation.js";
 import jwt from "jsonwebtoken";
 import mongoose from "mongoose";
 
@@ -37,6 +37,12 @@ const registerUser = asyncHandler(async (req, res) => {
     }
 
     const isValidEmail = await checkEmailExists(email)
+    const isTempEmail = isDisposableEmail(email)
+
+    if (isTempEmail) {
+        throw new ApiError(400, "Unexcepted Email");
+
+    }
     if (!isValidEmail) {
         throw new ApiError(400, "Invalid or non-existent email");
 
@@ -58,9 +64,9 @@ const registerUser = asyncHandler(async (req, res) => {
     let coverImageId = null;
     if (
         req.files &&
-        req.files.coverImage &&
-        Array.isArray(req.files.coverImage) &&
-        req.files.coverImage.length > 0
+        req.files?.coverImage &&
+        Array.isArray(req.files?.coverImage) &&
+        req.files?.coverImage.length > 0
     ) {
         coverImageLocalPath = req.files.coverImage[0].path;
         const coverImage = await uploadOnCloudinary(coverImageLocalPath).catch(
