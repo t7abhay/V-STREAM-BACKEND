@@ -36,12 +36,11 @@ const registerUser = asyncHandler(async (req, res) => {
         throw new ApiError(400, "All fields are required");
     }
 
-    const isValidEmail = await checkEmailExists(email)
     const isTempEmail = isDisposableEmail(email)
+    const isValidEmail = await checkEmailExists(email)
 
     if (isTempEmail) {
         throw new ApiError(400, "Unexcepted Email");
-
     }
     if (!isValidEmail) {
         throw new ApiError(400, "Invalid or non-existent email");
