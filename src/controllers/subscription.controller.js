@@ -11,17 +11,18 @@ const toggleSubscription = asyncHandler(async (req, res) => {
         throw new ApiError(400, "Invalid channel id ");
     }
 
-    const subcribe = await Subscription.findOne({
+    const isSubscribed = await Subscription.findOne({
         channel: channelId,
         subscriber: req.user?._id,
     });
 
-    if (subscribe) {
-        await Subscription.findByIdAndDelete(subcribe?._id);
+
+    if (isSubscribed) {
+        await Subscription.findByIdAndDelete(isSubscribed?._id);
 
         return res
             .status(200)
-            .json(new ApiResponse(200, { subcribe: false }, "Unsubscribed"));
+            .json(new ApiResponse(200, { isSubscribed: false }, "Unsubscribed"));
     }
 
     await Subscription.create({
@@ -31,7 +32,7 @@ const toggleSubscription = asyncHandler(async (req, res) => {
 
     return res
         .status(200)
-        .json(new ApiResponse(200, { subcribe: true }, "Subscribed"));
+        .json(new ApiResponse(200, { isSubscribed: true }, "Subscribed"));
 });
 
 const getUserChannelSubscribers = asyncHandler(async (req, res) => {
@@ -119,7 +120,7 @@ const getSubscribedChannels = asyncHandler(async (req, res) => {
     const subscribedChannels = await Subscription.aggregate([
         {
             $match: {
-                subscriber: new mongoose.Types.ObjectId(`${subscriberId}`),
+                subscriber: new mongoose.Types.ObjectId(subscriberId),
             },
         },
         {
@@ -167,7 +168,7 @@ const getSubscribedChannels = asyncHandler(async (req, res) => {
                         description: 1,
                         duration: 1,
                         createdAt: 1,
-                        views: 1,
+                        views: 1
                     },
                 },
             },
