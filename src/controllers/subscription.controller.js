@@ -4,8 +4,10 @@ import { ApiError } from "../utilities/ApiError.js";
 import { ApiResponse } from "../utilities/ApiResponse.js";
 import { asyncHandler } from "../utilities/asyncHandler.js";
 
+
 const toggleSubscription = asyncHandler(async (req, res) => {
     const { channelId } = req.params;
+
 
     if (!isValidObjectId(channelId)) {
         throw new ApiError(400, "Invalid channelId");
@@ -45,6 +47,7 @@ const toggleSubscription = asyncHandler(async (req, res) => {
             )
         );
 });
+
 
 const getUserChannelSubscribers = asyncHandler(async (req, res) => {
     let { channelId } = req.params;

@@ -3,19 +3,15 @@ import mongoose, { Schema } from "mongoose";
 const subscriptionSchema = new Schema(
    {
       subscriber: {
-         type: mongoose.Schema.Types.ObjectId,
-         ref: "User",
+         type: Schema.Types.ObjectId, //one who is subscribing
+         ref: "User"
       },
       channel: {
-         type: mongoose.Schema.Types.ObjectId,
-         ref: "User",
+         type: Schema.Types.ObjectId, //one to whom subscriber subscribes
+         ref: "User"
       },
    },
    { timestamps: true }
 );
 
 export const Subscription = mongoose.model("Subscription", subscriptionSchema);
-
-
-// if we searched in userdocuments->channels : then we can find number of subscribers
-// if we search in userdocuments -> users : then we can find how many channels a user has subscribed.
