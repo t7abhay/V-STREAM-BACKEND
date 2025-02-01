@@ -306,12 +306,12 @@ const updateUserDetails = asyncHandler(async (req, res) => {
 });
 
 const getUserChannelProfile = asyncHandler(async (req, res) => {
-    // we can get the user profile from the channel url
-    // the channel url can be found from praramter in req
+    /*   we can get the user profile from the channel url
+        the channel url can be found from praramter in req
+     */
 
     const { username } = req.params;
 
-    // defining aggregation pipelines
     const channel = await User.aggregate([
         //Stage 1 : match username in all documents ,optionally chained them to lowercase
         {
@@ -329,7 +329,7 @@ const getUserChannelProfile = asyncHandler(async (req, res) => {
             $lookup: {
                 from: "subscription",
                 localField: "_id",
-                foreignField: "channels",
+                foreignField: "channel",
                 as: "subscribers",
             },
         },
@@ -341,10 +341,10 @@ const getUserChannelProfile = asyncHandler(async (req, res) => {
         {
             // Lookup for
             $lookup: {
-                from: "subscription",
+                from: "subscriptions",
                 localField: "_id",
                 foreignField: "subscriber",
-                as: "subscriberedTo",
+                as: "subscribedTo",
             },
         },
         // Stage 4: Counting the subs and subbed
@@ -355,7 +355,7 @@ const getUserChannelProfile = asyncHandler(async (req, res) => {
                     $size: "$subscribers",
                 },
                 channelsSubscribedToCount: {
-                    $size: "$subscriberedTo",
+                    $size: "$subscribedTo",
                 },
 
                 // if found in Stage1 .i.e from total number of subs
@@ -374,12 +374,12 @@ const getUserChannelProfile = asyncHandler(async (req, res) => {
             $project: {
                 fullName: 1,
                 username: 1,
-                subscribersCount: 1,
-                channelsSubscribedToCount: 1,
-                isSubscribed: 1,
+                email: 1,
                 avatar: 1,
                 coverImage: 1,
-                email: 1,
+                subcribersCount: 1,
+                channelsSubscribedToCount: 1,
+                isSubscribed: 1
             },
         },
     ]);
@@ -389,15 +389,15 @@ const getUserChannelProfile = asyncHandler(async (req, res) => {
     }
 
     /* we get return value of aggregate as arrays */
-
-    if (!username?.trim()) {
-        throw new ApiError(400, "username is missing");
-    }
     return res
         .status(200)
         .json(
-            new ApiError(200, channel[0], "User Channel fetched successfully ")
-        );
+            new ApiResponse(
+                200,
+                channel[0],
+                "User channel fetced successfully"
+            )
+        )
 });
 
 const getWatchHistory = asyncHandler(async (req, res) => {

@@ -18,8 +18,8 @@ const updateUserAvatar = asyncHandler(async (req, res) => {
         throw new ApiError(400, "Error while uploading avatar");
     }
 
-    const user = await User.findById(req.user._id);
 
+    const user = await User.findById(req.user._id).select("avatar");
     if (!user) {
         throw new ApiError(404, "User not found");
     }
@@ -27,7 +27,7 @@ const updateUserAvatar = asyncHandler(async (req, res) => {
     const avatarToDelete = user.avatar?.public_id;
 
     const updateAvatar = await User.findByIdAndUpdate(
-        req.user._id,
+        req.user?._id,
         {
             $set: {
                 avatar: {
