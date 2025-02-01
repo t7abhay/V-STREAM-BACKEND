@@ -14,7 +14,7 @@ const uploadOnCloudinary = async (localFilePath) => {
 
         const result = await cloudinary.uploader.upload(localFilePath, {
             resource_type: 'auto',
-            moderation: "webpurify"
+            moderation: "aws_rek"
 
         });
 
