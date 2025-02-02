@@ -158,10 +158,6 @@ const loginUser = asyncHandler(async (req, res) => {
         sameSite: "None",
 
     };
-    res.setHeader("Set-Cookie", [
-        `accessToken=${accessToken}; ${options}`,
-        `refreshToken=${refreshToken}; ${options}`
-    ]);
 
     return res
         .status(200)
