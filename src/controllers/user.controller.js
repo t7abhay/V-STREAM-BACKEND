@@ -1,13 +1,13 @@
-import { asyncHandler } from "../utilities/asyncHandler.js";
-import { ApiError } from "../utilities/ApiError.js";
+import mongoose from "mongoose";
+import jwt from "jsonwebtoken";
 import { User } from "../models/user.model.js";
+import { asyncHandler } from "../utilities/asyncHandler.js";
+import { checkEmailExists, isDisposableEmail } from "../utilities/emailValidation.js";
+import { ApiError } from "../utilities/ApiError.js";
 import { uploadOnCloudinary } from "../utilities/cloudinary.js";
 import { ApiResponse } from "../utilities/ApiResponse.js";
 import { updateUserAvatar } from "./avatarUpdate.controller.js";
 import { updateUserCoverImage } from "./coverImageUpdate.controller.js";
-import { checkEmailExists, isDisposableEmail } from "../utilities/emailValidation.js";
-import jwt from "jsonwebtoken";
-import mongoose from "mongoose";
 
 const generateAccessAndRefreshTokens = async (userId) => {
     try {
