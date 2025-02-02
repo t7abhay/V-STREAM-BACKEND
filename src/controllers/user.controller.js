@@ -151,11 +151,17 @@ const loginUser = asyncHandler(async (req, res) => {
         "-password -refreshToken"
     );
 
+
     const options = {
         httpOnly: true,
         secure: true,
         sameSite: "None",
+
     };
+    res.setHeader("Set-Cookie", [
+        `accessToken=${accessToken}; ${cookieOptions}`,
+        `refreshToken=${refreshToken}; ${cookieOptions}`
+    ]);
 
     return res
         .status(200)
@@ -190,6 +196,7 @@ const logOutUser = asyncHandler(async (req, res) => {
     const options = {
         httpOnly: true,
         secure: true,
+        sameSite: "None"
     };
 
     return res
@@ -306,9 +313,10 @@ const updateUserDetails = asyncHandler(async (req, res) => {
 });
 
 const getUserChannelProfile = asyncHandler(async (req, res) => {
-    /*   we can get the user profile from the channel url
-        the channel url can be found from praramter in req
-     */
+    /*  
+    we can get the user profile from the channel url
+    the channel url can be found from praramter in req
+    */
 
     const { username } = req.params;
 
