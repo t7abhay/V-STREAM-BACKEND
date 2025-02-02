@@ -18,6 +18,7 @@ const userSchema = new Schema(
             unique: true,
             lowercase: true,
             trim: true,
+            index: true
         },
 
         fullName: {
@@ -73,12 +74,13 @@ the middleware request next to pass it as flag */
 
 // Middleware to hash the password
 userSchema.pre("save", async function (next) {
+    const saltForPasssword = bcrypt.genSalt(10)
     if (!this.isModified("password")) return next();
-    this.password = await bcrypt.hash(this.password, 10);
+    this.password = await bcrypt.hash(this.password, saltForPasssword);
     next();
 });
 
-// Middleware to validate the password by comparing it with hash value
+
 userSchema.methods.isPasswordCorrect = async function (password) {
     return await bcrypt.compare(password, this.password);
 };
