@@ -74,7 +74,7 @@ the middleware request next to pass it as flag */
 
 // Middleware to hash the password
 userSchema.pre("save", async function (next) {
-    const saltForPasssword = bcrypt.genSalt(10)
+    const saltForPasssword = await bcrypt.genSalt(10)
     if (!this.isModified("password")) return next();
     this.password = await bcrypt.hash(this.password, saltForPasssword);
     next();
