@@ -4,6 +4,7 @@ import cookieParser from "cookie-parser";
 import morgan from "morgan";
 import { rateLimit } from "express-rate-limit";
 import session from "express-session";
+import { mongoSanitize } from "express-mongo-sanitize"
 const app = new express();
 
 app.set("trust proxy", 1); // Fixes the express-rate-limit error
@@ -41,7 +42,13 @@ app.use(express.urlencoded({ extended: true, limit: "50mb" }));
 app.use(express.static("public"));
 app.use(cookieParser());
 app.use(morgan("dev"));
+app.use(
+    mongoSanitize({
+        replaceWith: '_',
+        allowDots: true,
 
+    }),
+);
 import userRouter from "./routes/user.routes.js";
 import commentRouter from "./routes/comment.routes.js";
 import likeRouter from "./routes/like.routes.js";
