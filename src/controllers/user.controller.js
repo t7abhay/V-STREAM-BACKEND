@@ -75,7 +75,7 @@ const registerUser = asyncHandler(async (req, res) => {
             }
         );
         if (coverImage) {
-            coverImageUrl = coverImage.url;
+            coverImageUrl = coverImage.secure_url;
             coverImageId = coverImage._id;
         }
     }
