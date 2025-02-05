@@ -4,7 +4,7 @@ import cookieParser from "cookie-parser";
 import morgan from "morgan";
 import { rateLimit } from "express-rate-limit";
 import session from "express-session";
-import { mongoSanitize } from "express-mongo-sanitize"
+import mongoSanitize from "express-mongo-sanitize"
 const app = new express();
 
 app.set("trust proxy", 1); // Fixes the express-rate-limit error
