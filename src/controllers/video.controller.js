@@ -12,16 +12,22 @@ import { ApiResponse } from "../utilities/ApiResponse.js";
 import mongoose, { isValidObjectId } from "mongoose";
 
 const getAllVideos = asyncHandler(async (req, res) => {
-    const { page = 0, limit = 10, query, sortBy, sortType, userId } = req.query;
+    const { page = 1, limit = 10, query, sortBy, sortType, userId } = req.query;
+
+    const pageNum = parseInt(page, 10);
+    const limitNum = parseInt(limit, 10);
+    const skip = (pageNum - 1) * limitNum;
 
     const searchPipeline = [];
+
+    // Full-text search using MongoDB Atlas Search
     if (query) {
         searchPipeline.push({
             $search: {
                 index: "full-text-search-index",
                 text: {
                     query: query,
-                    path: ["title", "description"], //Search only on title, description
+                    path: ["title", "description"],
                 },
             },
         });
@@ -41,6 +47,7 @@ const getAllVideos = asyncHandler(async (req, res) => {
 
     searchPipeline.push({ $match: { isPublished: true } });
 
+    // Sorting
     if (sortBy && sortType) {
         searchPipeline.push({
             $sort: {
@@ -73,19 +80,38 @@ const getAllVideos = asyncHandler(async (req, res) => {
         }
     );
 
-    const videoAggregate = Video.aggregate(searchPipeline);
+    // Clone the pipeline to get total count (remove pagination)
+    const countPipeline = [...searchPipeline, { $count: "total" }];
 
-    const options = {
-        page: parseInt(page, 10),
-        limit: parseInt(limit, 10),
-    };
+    // Add pagination stages
+    searchPipeline.push({ $skip: skip }, { $limit: limitNum });
 
-    const video = await Video.aggregatePaginate(videoAggregate, options);
+    // Run both aggregations
+    const [videos, countResult] = await Promise.all([
+        Video.aggregate(searchPipeline),
+        Video.aggregate(countPipeline),
+    ]);
 
-    return res
-        .status(200)
-        .json(new ApiResponse(200, video, "Videos fetched successfully"));
+    const totalDocs = countResult[0]?.total || 0;
+    const totalPages = Math.ceil(totalDocs / limitNum);
+
+    return res.status(200).json(
+        new ApiResponse(
+            200,
+            {
+                videos,
+                pagination: {
+                    totalDocs,
+                    totalPages,
+                    currentPage: pageNum,
+                    limit: limitNum,
+                },
+            },
+            "Videos fetched successfully"
+        )
+    );
 });
+
 const publishAVideo = asyncHandler(async (req, res) => {
     const { title, description } = req.body;
 
@@ -128,8 +154,7 @@ const publishAVideo = asyncHandler(async (req, res) => {
         owner: req.user?._id,
         isPublished: false,
     });
-    /*  The second verification to check 
-     if  the video has been uploaded on the database */
+
     const isVideoUploaded = await Video.findById(video._id);
 
     if (!isVideoUploaded) {
@@ -140,6 +165,7 @@ const publishAVideo = asyncHandler(async (req, res) => {
         .status(200)
         .json(new ApiResponse(200, video, "Video uploaded successfully"));
 });
+
 const getVideoById = asyncHandler(async (req, res) => {
     const { videoId } = req.params;
 
