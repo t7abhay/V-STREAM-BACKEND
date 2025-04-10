@@ -10,9 +10,12 @@ import {
 } from "../utilities/cloudinary.js";
 import { ApiResponse } from "../utilities/ApiResponse.js";
 import mongoose, { isValidObjectId } from "mongoose";
-
 const getAllVideos = asyncHandler(async (req, res) => {
-    const { page = 0, limit = 10, query, sortBy, sortType, userId } = req.query;
+    const { page = 1, limit = 10, query, sortBy, sortType, userId } = req.query;
+
+    const pageNum = parseInt(page, 10);
+    const limitNum = parseInt(limit, 10);
+    const skip = (pageNum - 1) * limitNum;
 
     const searchPipeline = [];
 
@@ -29,6 +32,7 @@ const getAllVideos = asyncHandler(async (req, res) => {
         });
     }
 
+ 
     if (userId) {
         if (!isValidObjectId(userId)) {
             throw new ApiError(400, "Invalid userId");
@@ -36,11 +40,12 @@ const getAllVideos = asyncHandler(async (req, res) => {
 
         searchPipeline.push({
             $match: {
-                owner: new mongoose.Types.ObjectId(`${userId}`),
+                owner: new mongoose.Types.ObjectId(userId),
             },
         });
     }
 
+    
     searchPipeline.push({ $match: { isPublished: true } });
 
     // Sorting
@@ -54,6 +59,7 @@ const getAllVideos = asyncHandler(async (req, res) => {
         searchPipeline.push({ $sort: { createdAt: -1 } });
     }
 
+    // Lookup owner details
     searchPipeline.push(
         {
             $lookup: {
@@ -76,19 +82,37 @@ const getAllVideos = asyncHandler(async (req, res) => {
         }
     );
 
-    const videoAggregate = Video.aggregate(searchPipeline);
+    
+    const countPipeline = [...searchPipeline, { $count: "total" }];
 
-    const options = {
-        page: parseInt(page, 10),
-        limit: parseInt(limit, 10),
-    };
+    // Add pagination stages
+    searchPipeline.push(
+        { $skip: skip },
+        { $limit: limitNum }
+    );
 
-    const video = await Video.aggregatePaginate(videoAggregate, options);
+    // Run both aggregations
+    const [videos, countResult] = await Promise.all([
+        Video.aggregate(searchPipeline),
+        Video.aggregate(countPipeline),
+    ]);
 
-    return res
-        .status(200)
-        .json(new ApiResponse(200, video, "Videos fetched successfully"));
+    const totalDocs = countResult[0]?.total || 0;
+    const totalPages = Math.ceil(totalDocs / limitNum);
+
+    return res.status(200).json(
+        new ApiResponse(200, {
+            videos,
+            pagination: {
+                totalDocs,
+                totalPages,
+                currentPage: pageNum,
+                limit: limitNum,
+            },
+        }, "Videos fetched successfully")
+    );
 });
+
 const publishAVideo = asyncHandler(async (req, res) => {
     const { title, description } = req.body;
 
