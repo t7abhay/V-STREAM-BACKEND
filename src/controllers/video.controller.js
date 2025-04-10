@@ -12,11 +12,7 @@ import { ApiResponse } from "../utilities/ApiResponse.js";
 import mongoose, { isValidObjectId } from "mongoose";
 
 const getAllVideos = asyncHandler(async (req, res) => {
-    const { page = 1, limit = 10, query, sortBy, sortType, userId } = req.query;
-
-    const pageNum = parseInt(page, 10);
-    const limitNum = parseInt(limit, 10);
-    const skip = (pageNum - 1) * limitNum;
+    const { page = 0, limit = 10, query, sortBy, sortType, userId } = req.query;
 
     const searchPipeline = [];
 
@@ -80,38 +76,19 @@ const getAllVideos = asyncHandler(async (req, res) => {
         }
     );
 
-    // Clone the pipeline to get total count (remove pagination)
-    const countPipeline = [...searchPipeline, { $count: "total" }];
+    const videoAggregate = Video.aggregate(searchPipeline);
 
-    // Add pagination stages
-    searchPipeline.push({ $skip: skip }, { $limit: limitNum });
+    const options = {
+        page: parseInt(page, 10),
+        limit: parseInt(limit, 10),
+    };
 
-    // Run both aggregations
-    const [videos, countResult] = await Promise.all([
-        Video.aggregate(searchPipeline),
-        Video.aggregate(countPipeline),
-    ]);
+    const video = await Video.aggregatePaginate(videoAggregate, options);
 
-    const totalDocs = countResult[0]?.total || 0;
-    const totalPages = Math.ceil(totalDocs / limitNum);
-
-    return res.status(200).json(
-        new ApiResponse(
-            200,
-            {
-                videos,
-                pagination: {
-                    totalDocs,
-                    totalPages,
-                    currentPage: pageNum,
-                    limit: limitNum,
-                },
-            },
-            "Videos fetched successfully"
-        )
-    );
+    return res
+        .status(200)
+        .json(new ApiResponse(200, video, "Videos fetched successfully"));
 });
-
 const publishAVideo = asyncHandler(async (req, res) => {
     const { title, description } = req.body;
 
