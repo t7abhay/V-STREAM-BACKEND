@@ -12,63 +12,55 @@ import { ApiResponse } from "../utilities/ApiResponse.js";
 import mongoose, { isValidObjectId } from "mongoose";
 
 
-
-
 const getAllVideos = asyncHandler(async (req, res) => {
     const { page = 1, limit = 10, query, sortBy, sortType, userId } = req.query;
-
-    const pageInt = parseInt(page, 10);
-    const limitInt = parseInt(limit, 10);
-    const skip = (pageInt - 1) * limitInt;
-
+    console.log(userId);
     const pipeline = [];
 
-   
+    // for using Full Text based search u need to create a search index in mongoDB atlas
+    // you can include field mapppings in search index eg.title, description, as well
+    // Field mappings specify which fields within your documents should be indexed for text search.
+    // this helps in seraching only in title, desc providing faster search results
+    // here the name of search index is 'search-videos'
     if (query) {
         pipeline.push({
             $search: {
                 index: "full-text-search-index",
                 text: {
                     query: query,
-                    path: ["title", "description"],
-                },
-            },
+                    path: ["title", "description"] //search only on title, desc
+                }
+            }
         });
     }
 
-    // Optional: filter by userId
     if (userId) {
         if (!isValidObjectId(userId)) {
             throw new ApiError(400, "Invalid userId");
         }
+
         pipeline.push({
             $match: {
-                owner: new mongoose.Types.ObjectId(userId),
-            },
+                owner: new mongoose.Types.ObjectId(userId)
+            }
         });
     }
 
- 
+    // fetch videos only that are set isPublished as true
     pipeline.push({ $match: { isPublished: true } });
 
-   
+    //sortBy can be views, createdAt, duration
+    //sortType can be ascending(-1) or descending(1)
     if (sortBy && sortType) {
         pipeline.push({
             $sort: {
-                [sortBy]: sortType === "asc" ? 1 : -1,
-            },
+                [sortBy]: sortType === "asc" ? 1 : -1
+            }
         });
     } else {
         pipeline.push({ $sort: { createdAt: -1 } });
     }
 
- 
-    pipeline.push(
-        { $skip: skip },
-        { $limit: limitInt }
-    );
-
- 
     pipeline.push(
         {
             $lookup: {
@@ -80,40 +72,29 @@ const getAllVideos = asyncHandler(async (req, res) => {
                     {
                         $project: {
                             username: 1,
-                            "avatar.url": 1,
-                        },
-                    },
-                ],
-            },
+                            "avatar.url": 1
+                        }
+                    }
+                ]
+            }
         },
         {
-            $unwind: "$ownerDetails",
+            $unwind: "$ownerDetails"
         }
-    );
+    )
 
-    const videos = await Video.aggregate(pipeline);
+    const videoAggregate = Video.aggregate(pipeline);
 
-    //  get total count for pagination metadata
-    const countPipeline = [...pipeline];
-    countPipeline.pop(); // remove $unwind
-    countPipeline.pop(); // remove $lookup
-    countPipeline.splice(-2); // remove $skip and $limit
-    countPipeline.push({ $count: "total" });
+    const options = {
+        page: parseInt(page, 10),
+        limit: parseInt(limit, 10)
+    };
 
-    const countResult = await Video.aggregate(countPipeline);
-    const totalDocs = countResult[0]?.total || 0;
+    const video = await Video.aggregatePaginate(videoAggregate, options);
 
-    return res.status(200).json(
-        new ApiResponse(200, {
-            videos,
-            pagination: {
-                totalDocs,
-                page: pageInt,
-                limit: limitInt,
-                totalPages: Math.ceil(totalDocs / limitInt),
-            },
-        }, "Videos fetched successfully")
-    );
+    return res
+        .status(200)
+        .json(new ApiResponse(200, video, "Videos fetched successfully"));
 });
 
 
