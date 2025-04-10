@@ -12,7 +12,114 @@ import { ApiResponse } from "../utilities/ApiResponse.js";
 import mongoose, { isValidObjectId } from "mongoose";
 
 
+
+
 const getAllVideos = asyncHandler(async (req, res) => {
+    const { page = 1, limit = 10, query, sortBy, sortType, userId } = req.query;
+
+    const pageInt = parseInt(page, 10);
+    const limitInt = parseInt(limit, 10);
+    const skip = (pageInt - 1) * limitInt;
+
+    const pipeline = [];
+
+   
+    if (query) {
+        pipeline.push({
+            $search: {
+                index: "full-text-search-index",
+                text: {
+                    query: query,
+                    path: ["title", "description"],
+                },
+            },
+        });
+    }
+
+    // Optional: filter by userId
+    if (userId) {
+        if (!isValidObjectId(userId)) {
+            throw new ApiError(400, "Invalid userId");
+        }
+        pipeline.push({
+            $match: {
+                owner: new mongoose.Types.ObjectId(userId),
+            },
+        });
+    }
+
+ 
+    pipeline.push({ $match: { isPublished: true } });
+
+   
+    if (sortBy && sortType) {
+        pipeline.push({
+            $sort: {
+                [sortBy]: sortType === "asc" ? 1 : -1,
+            },
+        });
+    } else {
+        pipeline.push({ $sort: { createdAt: -1 } });
+    }
+
+ 
+    pipeline.push(
+        { $skip: skip },
+        { $limit: limitInt }
+    );
+
+ 
+    pipeline.push(
+        {
+            $lookup: {
+                from: "users",
+                localField: "owner",
+                foreignField: "_id",
+                as: "ownerDetails",
+                pipeline: [
+                    {
+                        $project: {
+                            username: 1,
+                            "avatar.url": 1,
+                        },
+                    },
+                ],
+            },
+        },
+        {
+            $unwind: "$ownerDetails",
+        }
+    );
+
+    const videos = await Video.aggregate(pipeline);
+
+    //  get total count for pagination metadata
+    const countPipeline = [...pipeline];
+    countPipeline.pop(); // remove $unwind
+    countPipeline.pop(); // remove $lookup
+    countPipeline.splice(-2); // remove $skip and $limit
+    countPipeline.push({ $count: "total" });
+
+    const countResult = await Video.aggregate(countPipeline);
+    const totalDocs = countResult[0]?.total || 0;
+
+    return res.status(200).json(
+        new ApiResponse(200, {
+            videos,
+            pagination: {
+                totalDocs,
+                page: pageInt,
+                limit: limitInt,
+                totalPages: Math.ceil(totalDocs / limitInt),
+            },
+        }, "Videos fetched successfully")
+    );
+});
+
+
+
+
+/* const getAllVideos = asyncHandler(async (req, res) => {
     const { page = 1, limit = 10, query, sortBy, sortType, userId } = req.query;
 
     const searchPipeline = [];
@@ -86,7 +193,7 @@ const getAllVideos = asyncHandler(async (req, res) => {
     return res
         .status(200)
         .json(new ApiResponse(200, video, "Videos fetched successfully"));
-});
+}); */
 const publishAVideo = asyncHandler(async (req, res) => {
     const { title, description } = req.body;
 
