@@ -2,7 +2,7 @@ import schedule from "node-schedule";
 import axios from "axios";
 
 export const servicePinger = () => {
-    schedule.scheduleJob("*/13 * * * *", async () => {
+    schedule.scheduleJob("*/12 * * * *", async () => {
         try {
             const res = await axios.get(
                 "https://v-stream-backend.onrender.com/api/v1/healthcheck/health"
