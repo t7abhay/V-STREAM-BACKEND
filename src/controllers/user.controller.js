@@ -148,6 +148,21 @@ const loginUser = asyncHandler(async (req, res) => {
 
     const loggedInUser = await User.findById(user._id).select(" -password -refreshToken");
 
+/* 
+Note from abhay:
+// Manually setting Set-Cookie headers to include the "Partitioned" attribute.
+// This is necessary because Express's res.cookie() currently doesn't support setting the Partitioned flag.
+// The Partitioned attribute allows third-party cookies to be scoped per top-level site context,
+// which is part of modern browser privacy changes (e.g., Chrome's Privacy Sandbox).
+// Without this, cookies like "accessToken" and "refreshToken" may be rejected in third-party contexts
+// or trigger warnings, especially when SameSite=None is used.
+*/
+    
+    res.setHeader("Set-Cookie", [
+    `accessToken=${accessToken}; HttpOnly; Secure; SameSite=None; Partitioned; Path=/`,
+    `refreshToken=${refreshToken}; HttpOnly; Secure; SameSite=None; Partitioned; Path=/`
+]);
+
     const options = {
         httpOnly: true,
         secure: true,
@@ -156,13 +171,11 @@ const loginUser = asyncHandler(async (req, res) => {
 
     return res
         .status(200)
-        .cookie("accessToken", accessToken, options)
-        .cookie("refreshToken", refreshToken, options)
         .json(
             new ApiResponse(
                 200,
                 {
-                    user: loggedInUser, accessToken, refreshToken
+                    user: loggedInUser
                 },
                 "User logged in successfully !!!."
             )
